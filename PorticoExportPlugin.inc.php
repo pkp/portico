@@ -439,24 +439,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 		unlink($zipName);
 		return true;
 	}
-
-    /**
-     * Close FTP Connection
-     * @param $conn_id
-     */
-    function closeFtpConnection(&$conn_id)
-    {
-        ftp_close($conn_id);
-    }
-
-    /**
-     * Remove zip file from root directory
-     */
-    function cleanUpZipFile($fileName)
-    {
-       	unlink($fileName);
-    }
-
+	
 	function ftpIssue(&$journal, &$issue) {
 		// FTP credentials
 		$journalId = $journal->getId();
@@ -568,13 +551,13 @@ class PorticoExportPlugin extends ImportExportPlugin {
 		// upload a file
 		$templateMgr =& TemplateManager::getManager();
 		if (ftp_put($conn_id, $zipName, $zipName, FTP_BINARY)) {
-			$this->closeFtpConnection($conn_id);
-			$this->cleanUpZipFile($zipName);
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportSuccess.tpl');
 			exit; 
 		} else {
-            $this->closeFtpConnection($conn_id);
-            $this->cleanUpZipFile($zipName);
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportFailure.tpl');
 			exit; 
 		} 
@@ -687,17 +670,17 @@ class PorticoExportPlugin extends ImportExportPlugin {
 		// upload a file
 		$templateMgr =& TemplateManager::getManager();
 		if (ftp_put($conn_id, $zipName, $zipName, FTP_BINARY)) {
-            $this->closeFtpConnection($conn_id);
-            $this->cleanUpZipFile($zipName);
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportSuccess.tpl');
 			exit; 
 		} else {
-            $this->closeFtpConnection($conn_id);
-            $this->cleanUpZipFile($zipName);
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportFailure.tpl');
 			exit; 
 		}
-	
+
 		return true;
 	}
 	
