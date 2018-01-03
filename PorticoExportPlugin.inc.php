@@ -439,7 +439,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 		unlink($zipName);
 		return true;
 	}
-
+	
 	function ftpIssue(&$journal, &$issue) {
 		// FTP credentials
 		$journalId = $journal->getId();
@@ -550,16 +550,18 @@ class PorticoExportPlugin extends ImportExportPlugin {
 
 		// upload a file
 		$templateMgr =& TemplateManager::getManager();
-		if (ftp_put($conn_id, $zipName, $zipName, FTP_BINARY)) { 
+		if (ftp_put($conn_id, $zipName, $zipName, FTP_BINARY)) {
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportSuccess.tpl');
 			exit; 
-		} else { 
+		} else {
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportFailure.tpl');
 			exit; 
 		} 
-		// close the connection 
-		ftp_close($conn_id);
-		unlink($zipName);
+
 		return true;
 	}
 	
@@ -667,16 +669,18 @@ class PorticoExportPlugin extends ImportExportPlugin {
 
 		// upload a file
 		$templateMgr =& TemplateManager::getManager();
-		if (ftp_put($conn_id, $zipName, $zipName, FTP_BINARY)) { 
+		if (ftp_put($conn_id, $zipName, $zipName, FTP_BINARY)) {
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportSuccess.tpl');
 			exit; 
-		} else { 
+		} else {
+            ftp_close($conn_id);
+            unlink($zipName);
 			return $templateMgr->display($this->getTemplatePath() . 'exportFailure.tpl');
 			exit; 
-		} 
-		// close the connection 
-		ftp_close($conn_id);
-		unlink($zipName);
+		}
+
 		return true;
 	}
 	
