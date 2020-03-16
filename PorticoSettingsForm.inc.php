@@ -36,7 +36,7 @@ class PorticoSettingsForm extends Form {
 		$this->journalId = $journalId;
 		$this->plugin = $plugin;
 
-		parent::__construct($this->plugin->getTemplateResource('settingsForm.tpl'));
+		parent::__construct($this->plugin->getTemplatePath(). 'settingsForm.tpl');
 
 		foreach($this->fields as $name) {
 			$this->addCheck(new FormValidator($this, $name, 'required', 'plugins.importexport.portico.manager.settings.' . $name . 'Required'));

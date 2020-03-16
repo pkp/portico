@@ -192,8 +192,13 @@ class PorticoExportDom extends XMLCustomWriter {
 		$nameNode = self::createElement($doc, 'name');
 		self::appendChild($root, $nameNode);
 
-		self::createChildWithText($doc, $nameNode, 'surname', $author->getLocalizedFamilyName($locale));
-		self::createChildWithText($doc, $nameNode, 'given-names', $author->getLocalizedGivenName($locale));
+		$givenNames = $author->getFirstName();
+		if ($author->getMiddleName()) {
+			$givenNames .= ' ' . $author->getMiddleName();
+		}
+
+		self::createChildWithText($doc, $nameNode, 'surname', $author->getLastName());
+		self::createChildWithText($doc, $nameNode, 'given-names', $givenNames);
 
 		if ($authorIndex == 0) {
 			// See http://pkp.sfu.ca/bugzilla/show_bug.cgi?id=7774
