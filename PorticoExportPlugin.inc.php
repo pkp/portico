@@ -47,6 +47,13 @@ class PorticoExportPlugin extends ImportExportPlugin {
 	}
 
 	/**
+	 * @copydoc Plugin::getTemplatePath($inCore)
+	 */
+	function getTemplatePath($inCore = false) {
+		return parent::getTemplatePath($inCore) . 'templates/';
+	}
+
+	/**
 	 * @copydoc ImportExportPlugin::display()
 	 */
 	public function display($args, $request) {
@@ -91,7 +98,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 			$templateManager->assign('abbreviation', $value);
 		}
 
-		$templateManager->display($this->getTemplateResource('index.tpl'));
+		$templateManager->display($this->getTemplatePath() . 'index.tpl');
 	}
 
 	/**
