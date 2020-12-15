@@ -1,0 +1,78 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2020-12-15T23:18:52+00:00\n"
+"PO-Revision-Date: 2020-12-15T23:18:52+00:00\n"
+"Language: \n"
+
+msgid "plugins.importexport.portico.settings"
+msgstr "Settings"
+
+msgid "plugins.importexport.portico.displayName"
+msgstr "Portico Export Plugin"
+
+msgid "plugins.importexport.portico.password.description"
+msgstr "Note that the password supplied here is stored in plaintext in the database."
+
+msgid "plugins.importexport.portico.description"
+msgstr "This plugin may be used to export your journal content for inclusion in the <a href=\"https://www.portico.org\" target=\"_blank\">Portico digital preservation service</a>. Content may be downloaded manually to your local computer for later delivery to Portico, or sent directly to your account on the Portico FTP server by configuring your credentials below. Access the <em>Export Issues<em> tab in order to export the data."
+
+msgid "plugins.importexport.portico.description.short"
+msgstr "This plugin may be used to export your journal content for inclusion in the Portico digital preservation service. Content maybe downloaded manually to your local computer for later delivery to Portico, or may be sent directly to your account on the Portico FTP server."
+
+msgid "plugins.importexport.portico.issnWarning"
+msgstr "Note: It appears that you have not configured an online ISSN for your journal. This is not strictly mandatory, but will simplify the deposit process. You may configure an ISSN in the <a href=\"{$setupUrl}\" target=\"_blank\">journal setup</a>."
+
+msgid "plugins.importexport.portico.abbreviationWarning"
+msgstr "Note: It appears that you have not configured an abbreviation for your journal. This is not strictly mandatory, but will simplify the deposit process. You may create an abbreviation from <a href=\"{$setupUrl}\" target=\"_blank\">Journal Setup Step 1.1</a>."
+
+msgid "plugins.importexport.portico.porticoHost"
+msgstr "Host"
+
+msgid "plugins.importexport.portico.porticoHostInstructions"
+msgstr "ftp.portico.org unless otherwise noted"
+
+msgid "plugins.importexport.portico.porticoUsername"
+msgstr "Username"
+
+msgid "plugins.importexport.portico.porticoPassword"
+msgstr "Password"
+
+msgid "plugins.importexport.portico.export.issues"
+msgstr "Export Issues"
+
+msgid "plugins.importexport.portico.export.ftp"
+msgstr "Export Issues to Portico"
+
+msgid "plugins.importexport.portico.export.toggleSelection"
+msgstr "Toggle Selection"
+
+msgid "plugins.importexport.portico.export.success"
+msgstr "The export was executed successfully!"
+
+msgid "plugins.importexport.portico.export.failure.connection"
+msgstr "Failed to connect to the FTP server at {$host}."
+
+msgid "plugins.importexport.portico.export.failure.credentials"
+msgstr "Failed to logon into the FTP server with the given credentials."
+
+msgid "plugins.importexport.portico.export.failure.settings"
+msgstr "To export the issues to Portico you must setup the credentials in the settings tab."
+
+msgid "plugins.importexport.portico.export.failure.loadingIssue"
+msgstr "Failed to load the issue with ID #{$issueId}."
+
+msgid "plugins.importexport.portico.export.failure.creatingFile"
+msgstr "Failed to create zip file."
+
+msgid "plugins.importexport.portico.export.failure.noIssueSelected"
+msgstr "The export was aborted since no issue was selected."
+
+msgid "plugins.importexport.portico.export.failure.general"
+msgstr "The export was not successful. Your server may have taken too long to send the file to the Portico FTP server. Please try manually downloading your articles to send via an external FTP client."
