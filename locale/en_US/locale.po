@@ -7,8 +7,8 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2020-12-15T23:18:52+00:00\n"
-"PO-Revision-Date: 2020-12-15T23:18:52+00:00\n"
+"POT-Creation-Date: 2021-02-24T21:00:46+00:00\n"
+"PO-Revision-Date: 2021-02-24T21:00:46+00:00\n"
 "Language: \n"
 
 msgid "plugins.importexport.portico.settings"
@@ -17,11 +17,11 @@ msgstr "Settings"
 msgid "plugins.importexport.portico.displayName"
 msgstr "Portico Export Plugin"
 
-msgid "plugins.importexport.portico.password.description"
-msgstr "Note that the password supplied here is stored in plaintext in the database."
-
 msgid "plugins.importexport.portico.description"
-msgstr "This plugin may be used to export your journal content for inclusion in the <a href=\"https://www.portico.org\" target=\"_blank\">Portico digital preservation service</a>. Content may be downloaded manually to your local computer for later delivery to Portico, or sent directly to your account on the Portico FTP server by configuring your credentials below. Access the <em>Export Issues<em> tab in order to export the data."
+msgstr ""
+"\n"
+"\t\t<p>This plugin may be used to export your journal content for inclusion in the <a href=\"https://www.portico.org\" target=\"_blank\">Portico digital preservation service</a>. Content may be downloaded manually to your local computer for later delivery to Portico, or sent directly to your account on the Portico server by configuring your credentials below. Access the <em>Export Issues</em> tab in order to export the data.</p>\n"
+"\t"
 
 msgid "plugins.importexport.portico.description.short"
 msgstr "This plugin may be used to export your journal content for inclusion in the Portico digital preservation service. Content maybe downloaded manually to your local computer for later delivery to Portico, or may be sent directly to your account on the Portico FTP server."
@@ -32,23 +32,38 @@ msgstr "Note: It appears that you have not configured an online ISSN for your jo
 msgid "plugins.importexport.portico.abbreviationWarning"
 msgstr "Note: It appears that you have not configured an abbreviation for your journal. This is not strictly mandatory, but will simplify the deposit process. You may create an abbreviation from <a href=\"{$setupUrl}\" target=\"_blank\">Journal Setup Step 1.1</a>."
 
-msgid "plugins.importexport.portico.porticoHost"
-msgstr "Host"
+msgid "plugins.importexport.portico.endpoint.type"
+msgstr "Server Type"
 
-msgid "plugins.importexport.portico.porticoHostInstructions"
-msgstr "ftp.portico.org unless otherwise noted"
+msgid "plugins.importexport.portico.endpoint.hostname"
+msgstr "Hostname"
 
-msgid "plugins.importexport.portico.porticoUsername"
+msgid "plugins.importexport.portico.endpoint.username"
 msgstr "Username"
 
-msgid "plugins.importexport.portico.porticoPassword"
+msgid "plugins.importexport.portico.endpoint.password"
 msgstr "Password"
+
+msgid "plugins.importexport.portico.endpoint.path"
+msgstr "Path"
+
+msgid "plugins.importexport.portico.endpointNumber"
+msgstr "Endpoint #{$number}"
+
+msgid "plugins.importexport.portico.newEndpoint"
+msgstr "New Endpoint"
+
+msgid "plugins.importexport.portico.endpoint.delete"
+msgstr "Delete this endpoint"
+
+msgid "plugins.importexport.portico.endpointPlaceholder"
+msgstr "ftp://username:password@ftp.portico.com"
 
 msgid "plugins.importexport.portico.export.issues"
 msgstr "Export Issues"
 
 msgid "plugins.importexport.portico.export.ftp"
-msgstr "Export Issues to Portico"
+msgstr "Deposit Issues"
 
 msgid "plugins.importexport.portico.export.toggleSelection"
 msgstr "Toggle Selection"
