@@ -14,17 +14,23 @@
 <locale name="en_US" full_name="U.S. English">
 	<message key="plugins.importexport.portico.settings">Settings</message>
 	<message key="plugins.importexport.portico.displayName">Portico Export Plugin</message>
-	<message key="plugins.importexport.portico.password.description">Note that the password supplied here is stored in plaintext in the database.</message>
-	<message key="plugins.importexport.portico.description"><![CDATA[This plugin may be used to export your journal content for inclusion in the <a href="https://www.portico.org" target="_blank">Portico digital preservation service</a>. Content may be downloaded manually to your local computer for later delivery to Portico, or sent directly to your account on the Portico FTP server by configuring your credentials below. Access the <em>Export Issues<em> tab in order to export the data.]]></message>
+	<message key="plugins.importexport.portico.description"><![CDATA[
+		<p>This plugin may be used to export your journal content for inclusion in the <a href="https://www.portico.org" target="_blank">Portico digital preservation service</a>. Content may be downloaded manually to your local computer for later delivery to Portico, or sent directly to your account on the Portico server by configuring your credentials below. Access the <em>Export Issues</em> tab in order to export the data.</p>
+	]]></message>
 	<message key="plugins.importexport.portico.description.short"><![CDATA[This plugin may be used to export your journal content for inclusion in the Portico digital preservation service. Content maybe downloaded manually to your local computer for later delivery to Portico, or may be sent directly to your account on the Portico FTP server.]]></message>
 	<message key="plugins.importexport.portico.issnWarning"><![CDATA[Note: It appears that you have not configured an online ISSN for your journal. This is not strictly mandatory, but will simplify the deposit process. You may configure an ISSN in the <a href="{$setupUrl}" target="_blank">journal setup</a>.]]></message>
 	<message key="plugins.importexport.portico.abbreviationWarning"><![CDATA[Note: It appears that you have not configured an abbreviation for your journal. This is not strictly mandatory, but will simplify the deposit process. You may create an abbreviation from <a href="{$setupUrl}" target="_blank">Journal Setup Step 1.1</a>.]]></message>
-	<message key="plugins.importexport.portico.porticoHost">Host</message>
-	<message key="plugins.importexport.portico.porticoHostInstructions">ftp.portico.org unless otherwise noted</message>
-	<message key="plugins.importexport.portico.porticoUsername">Username</message>
-	<message key="plugins.importexport.portico.porticoPassword">Password</message>
+	<message key="plugins.importexport.portico.endpoint.type">Server Type</message>
+	<message key="plugins.importexport.portico.endpoint.hostname">Hostname</message>
+	<message key="plugins.importexport.portico.endpoint.username">Username</message>
+	<message key="plugins.importexport.portico.endpoint.password">Password</message>
+	<message key="plugins.importexport.portico.endpoint.path">Path</message>
+	<message key="plugins.importexport.portico.endpointNumber">Endpoint #{$number}</message>
+	<message key="plugins.importexport.portico.newEndpoint">New Endpoint</message>
+	<message key="plugins.importexport.portico.endpoint.delete">Delete this endpoint</message>
+	<message key="plugins.importexport.portico.endpointPlaceholder">ftp://username:password@ftp.portico.com</message>
 	<message key="plugins.importexport.portico.export.issues">Export Issues</message>
-	<message key="plugins.importexport.portico.export.ftp">Export Issues to Portico</message>
+	<message key="plugins.importexport.portico.export.ftp">Deposit Issues</message>
 	<message key="plugins.importexport.portico.export.toggleSelection">Toggle Selection</message>
 	<message key="plugins.importexport.portico.export.success">The export was executed successfully!</message>
 	<message key="plugins.importexport.portico.export.failure.connection">Failed to connect to the FTP server at {$host}.</message>

@@ -92,35 +92,74 @@ class PorticoExportPlugin extends ImportExportPlugin {
 	}
 
 	/**
+	 * Return a list of deposit endpoints.
+	 * @return array
+	 */
+	public function getEndpoints($contextId) {
+		// Convert old-style Portico credentials to a list of endpoints.
+		if ($hostname = $this->getSetting($contextId, 'porticoHost')) {
+			$username = $this->getSetting($contextId, 'porticoUsername');
+			$password = $this->getSetting($contextId, 'porticoPassword');
+			$this->updateSetting($contextId, 'endpoints', [[
+				'type' => 'ftp',
+				'hostname' => $hostname,
+				'username' => $username,
+				'password' => $password,
+			]]);
+			$pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
+			foreach (['porticoHost', 'porticoUsername', 'porticoPassword'] as $settingName) {
+				$pluginSettingsDao->deleteSetting($contextId, $this->getName(), $settingName);
+			}
+		}
+		return (array) $this->getSetting($contextId, 'endpoints');
+	}
+
+	/**
  	 * Exports a zip file with the selected issues to the configured Portico account
  	 * @param string $path the path of the zip file
 	 */
 	private function _export(string $path) : void {
-		$contextId = $this->_context->getId();
-		$credentials = (object) [
-			'server' => $this->getSetting($contextId, 'porticoHost'),
-			'user' => $this->getSetting($contextId, 'porticoUsername'),
-			'password' => $this->getSetting($contextId, 'porticoPassword')
-		];
-		foreach ($credentials as $parameter) {
-			if(!strlen($parameter)) {
+		$endpoints = $this->getEndpoints($this->_context->getId());
+
+		// Verify that the credentials are complete
+		foreach ($endpoints as $credentials) {
+			if (empty($credentials['type']) || empty($credentials['hostname'])) {
 				throw new Exception(__('plugins.importexport.portico.export.failure.settings'));
 			}
 		}
-		if (!($ftp = ftp_connect($credentials->server))) {
-			throw new Exception(__('plugins.importexport.portico.export.failure.connection', ['host' => $credentials->server]));
-		}
-		try {
-			if (!ftp_login($ftp, $credentials->user, $credentials->password)) {
-				throw new Exception(__('plugins.importexport.portico.export.failure.credentials'));
+
+		// Perform the deposit
+		require_once(dirname(__FILE__) . '/vendor/autoload.php');
+		foreach ($endpoints as $credentials) {
+			switch ($credentials['type']) {
+				case 'ftp':
+					$adapter = new League\Flysystem\Ftp\FtpAdapter(
+						League\Flysystem\Ftp\FtpConnectionOptions::fromArray([
+							'host' => $credentials['hostname'],
+							'username' => $credentials['username'],
+							'password' => $credentials['password'],
+							'root' => $credentials['path'],
+						])
+					);
+					break;
+				case 'loc':
+				case 'portico':
+				case 'sftp':
+					$adapter = new League\Flysystem\PhpseclibV2\SftpAdapter(
+						new League\Flysystem\PhpseclibV2\SftpConnectionProvider(
+							$credentials['hostname'],
+							$credentials['username'],
+							$credentials['password'],
+						),
+						$credentials['path']
+					);
+					break;
+				default: throw new Exception('Unknown endpoint type!');
 			}
-			ftp_pasv($ftp, true);
-			if (!ftp_put($ftp, $this->_createFilename(), $path, FTP_BINARY)) {
-				throw new Exception(__('plugins.importexport.portico.export.failure.general'));
-			}
-		}
-		finally {
-			ftp_close($ftp);
+			$fs = new League\Flysystem\Filesystem($adapter);
+			$fp = fopen($path, 'r');
+			$fs->writeStream($this->_createFilename(), $fp);
+			fclose($fp);
 		}
 	}
 
@@ -197,7 +236,6 @@ class PorticoExportPlugin extends ImportExportPlugin {
 					$form->execute();
 					$notificationManager = new NotificationManager();
 					$notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SUCCESS);
-					return new JSONMessage();
 				}
 			} else {
 				$form->initData();
