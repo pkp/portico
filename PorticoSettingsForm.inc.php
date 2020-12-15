@@ -23,9 +23,6 @@ class PorticoSettingsForm extends Form {
 	/** @var $plugin PorticoExportPlugin */
 	private $plugin;
 
-	/** @var $fields array */
-	private $fields = ['porticoHost', 'porticoUsername', 'porticoPassword'];
-
 	/**
 	 * Constructor
 	 * @param $plugin PorticoExportPlugin
@@ -37,33 +34,58 @@ class PorticoSettingsForm extends Form {
 
 		parent::__construct($this->plugin->getTemplateResource('settingsForm.tpl'));
 
-		foreach($this->fields as $name) {
-			$this->addCheck(new FormValidator($this, $name, 'required', 'plugins.importexport.portico.manager.settings.' . $name . 'Required'));
-		}
+		$this->addCheck(new FormValidatorArrayCustom($this, 'endpoints', 'required', 'plugins.importexport.portico.manager.settings.required', function($credentials) {
+			return true;
+		}));
 	}
 
 	/**
 	 * @copydoc Form::initData()
 	 */
 	public function initData() {
-		foreach($this->fields as $name) {
-			$this->setData($name, $this->plugin->getSetting($this->contextId, $name));
-		}
+		$this->setData('endpoints', $this->plugin->getEndpoints($this->contextId));
 	}
 
 	/**
 	 * @copydoc Form::readInputData()
 	 */
 	public function readInputData() {
-		$this->readUserVars($this->fields);
+		$this->readUserVars(['endpoints']);
+
+		// Remove empties and resequence the array.
+		$this->_data['endpoints'] = array_filter(array_values((array) $this->_data['endpoints']), function($e) {
+			return !empty($e['hostname']) && !empty($e['type']);
+		});
+	}
+
+	/**
+	 * @copydata Form::fetch()
+	 */
+	function fetch($request, $template = null, $display = false) {
+		$templateMgr = TemplateManager::getManager($request);
+		$templateMgr->assign([
+			'endpointTypeOptions' => [
+				'' => __('plugins.importexport.portico.endpoint.delete'),
+				'portico' => 'Portico',
+				'loc' => 'Library of Congress',
+				'sftp' => 'SFTP',
+				'ftp' => 'FTP',
+			],
+			'newEndpointTypeOptions' => [
+				'' => '',
+				'portico' => 'Portico',
+				'loc' => 'Library of Congress',
+				'sftp' => 'SFTP',
+				'ftp' => 'FTP',
+			]
+		]);
+		return parent::fetch($request, $template, $display);
 	}
 
 	/**
 	 * @copydoc Form::execute()
 	 */
 	public function execute(...$functionArgs) {
-		foreach($this->fields as $name) {
-			$this->plugin->updateSetting($this->contextId, $name, $this->getData($name));
-		}
+		$this->plugin->updateSetting($this->contextId, 'endpoints', $this->getData('endpoints'));
 	}
 }
