@@ -1,7 +1,7 @@
 ```
 ================================================
 === OJS Portico Export Plugin
-=== Version: 1.0.0.2
+=== Version: (see version.xml)
 === Author: James MacGregor <jmacgreg@gmail.com>
 ================================================
 ```
