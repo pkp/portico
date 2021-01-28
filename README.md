@@ -20,7 +20,7 @@ Same requirements as the OJS 3.x core.
 
 # Compatibility
 
-OJS 3.1.2-x. 
+OJS 3.1.2-x.
 
 # Installation
 To install the plugin:
