@@ -4,8 +4,8 @@
 <!--
   * plugins/importexport/portico/version.xml
   *
-  * Copyright (c) 2014-2019 Simon Fraser University
-  * Copyright (c) 2003-2019 John Willinsky
+  * Copyright (c) 2014-2021 Simon Fraser University
+  * Copyright (c) 2003-2021 John Willinsky
   * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
   *
   * Plugin version information.
@@ -13,6 +13,6 @@
 <version>
 	<application>portico</application>
 	<type>plugins.importexport</type>
-	<release>1.0.0.1</release>
-	<date>2019-05-13</date>
+	<release>1.0.0.2</release>
+	<date>2021-01-29</date>
 </version>
