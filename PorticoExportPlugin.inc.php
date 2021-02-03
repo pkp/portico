@@ -3,8 +3,8 @@
 /**
  * @file plugins/importexport/portico/PorticoExportPlugin.inc.php
  *
- * Copyright (c) 2014-2020 Simon Fraser University
- * Copyright (c) 2003-2020 John Willinsky
+ * Copyright (c) 2014-2021 Simon Fraser University
+ * Copyright (c) 2003-2021 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class PorticoExportPlugin
@@ -60,7 +60,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 		}
 
 		// set the issn and abbreviation template variables
-		foreach (['onlineIssn', 'printIssn', 'issn'] as $name) {
+		foreach (['onlineIssn', 'printIssn'] as $name) {
 			if ($value = $this->_context->getSetting($name)) {
 				$templateManager->assign('issn', $value);
 				break;
@@ -132,14 +132,13 @@ class PorticoExportPlugin extends ImportExportPlugin {
 	 * @return string the path of the creates zip file
 	 */
 	private function _createFile(array $issueIds) : string {
-		import('lib.pkp.classes.xml.XMLCustomWriter');
-		import('lib.pkp.classes.file.SubmissionFileManager');
 		$this->import('PorticoExportDom');
 
 		// create zip file
 		$path = tempnam(sys_get_temp_dir(), 'tmp');
 		$zip = new ZipArchive();
 		if ($zip->open($path, ZipArchive::CREATE) !== true) {
+			error_log('Unable to create Portico ZIP: ' . $zip->getStatusString());
 			throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
 		}
 		try {
@@ -153,7 +152,6 @@ class PorticoExportPlugin extends ImportExportPlugin {
 				$submissions = Services::get('submission')->getMany([
 					'contextId' => $this->_context->getId(),
 					'issueIds' => [$issueId],
-					'status' => [STATUS_PUBLISHED],
 					'orderBy' => 'seq',
 					'orderDirection' => 'ASC',
 				]);
@@ -161,6 +159,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 					$document = new PorticoExportDom($this->_context, $issue, $article);
 					$articlePathName = $article->getId() . '/' . $article->getId() . '.xml';
 					if (!$zip->addFromString($articlePathName, $document)) {
+						error_log("Unable add $articlePathName to Portico ZIP");
 						throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
 					}
 
@@ -169,6 +168,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 						if ($submissionFile = $galley->getFile()) {
 							if (file_exists($filePath = $submissionFile->getFilePath())) {
 								if (!$zip->addFile($filePath, $article->getId() . '/' . $submissionFile->getClientFileName())) {
+									error_log("Unable add file $filePath to Portico ZIP");
 									throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
 								}
 							}
@@ -179,6 +179,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 		}
 		finally {
 			if (!$zip->close()) {
+				error_log('Unable to close Portico ZIP: ' . $zip->getStatusString());
 				throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
 			}
 		}
