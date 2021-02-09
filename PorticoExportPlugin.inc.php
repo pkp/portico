@@ -1,15 +1,13 @@
 <?php
 
 /**
- * @file plugins/importexport/portico/PorticoExportPlugin.inc.php
+ * @file PorticoExportPlugin.inc.php
  *
  * Copyright (c) 2014-2021 Simon Fraser University
  * Copyright (c) 2003-2021 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class PorticoExportPlugin
- * @ingroup plugins_importexport_portico
- *
  * @brief Portico export plugin
  */
 
