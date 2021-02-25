@@ -16,10 +16,9 @@ This plugin is licensed under the GNU General Public License v3. See the file CO
 complete terms of this license.
 
 # System Requirements
-Same requirements as the OJS 3.x core.
+This plugin includes the Flysystem library, which requires PHP 7.2 or greater.
 
 # Compatibility
-
 OJS 3.1.2-x.
 
 # Installation
