@@ -149,7 +149,7 @@ class PorticoExportPlugin extends ImportExportPlugin {
 						new League\Flysystem\PhpseclibV2\SftpConnectionProvider(
 							$credentials['hostname'],
 							$credentials['username'],
-							$credentials['password'],
+							$credentials['password']
 						),
 						$credentials['path']
 					);
