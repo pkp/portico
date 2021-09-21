@@ -30,6 +30,9 @@ class PorticoExportDom {
 	/** @var DOMElement Document node */
 	private $_document;
 
+	/** @var Section Section */
+	private $_section;
+
 	/**
 	 * Constructor
 	 * @param Context $journal Journal
@@ -41,6 +44,11 @@ class PorticoExportDom {
 		$this->_context = $context;
 		$this->_issue = $issue;
 		$this->_article = $article;
+		$sectionDao = DAORegistry::getDAO('SectionDAO'); /** @var SectionDAO $sectionDao */
+		if ($sectionId = $this->_article->getSectionId()) {
+			$this->_section = $sectionDao->getById($sectionId);
+		}
+
 		$domImplementation = new DOMImplementation();
 		$this->_document = $domImplementation->createDocument(
 			'1.0',
@@ -67,6 +75,7 @@ class PorticoExportDom {
 		$doc = $this->_document;
 		$article = $this->_article;
 		$issue = $this->_issue;
+		$section = $this->_section;
 
 		/* --- Article --- */
 		$root = $doc->createElement('article');
@@ -133,6 +142,15 @@ class PorticoExportDom {
 			$articleMetaNode->appendChild($publisherIdNode);
 		}
 
+		if ($section) {
+			$subjGroupNode = $articleMetaNode
+				->appendChild($doc->createElement('article-categories'))
+				->appendChild($doc->createElement('subj-group'));
+			$subjGroupNode->setAttribute('xml:lang', $journal->getPrimaryLocale());
+			$subjGroupNode->setAttribute('subj-group-type', 'heading');
+			$subjGroupNode->appendChild($doc->createElement('subject', $section->getLocalizedTitle()));
+		}
+
 		// article-title
 		$titleGroupNode = $doc->createElement('title-group');
 		$articleMetaNode->appendChild($titleGroupNode);
@@ -171,11 +189,39 @@ class PorticoExportDom {
 			}
 		}
 
+		// keywords
+		$submissionKeywordDao = DAORegistry::getDAO('SubmissionKeywordDAO'); /** @var SubmissionKeywordDAO $submissionKeywordDao */
+		foreach ($submissionKeywordDao->getKeywords($article->getId(), $journal->getSupportedLocales()) as $locale => $keywords) {
+			if (empty($keywords)) {
+				continue;
+			}
+			$kwGroup = $articleMetaNode->appendChild($doc->createElement('kwd-group'));
+			$kwGroup->setAttribute('xml:lang', substr($locale, 0, 2));
+			foreach ($keywords as $keyword) {
+				$kwGroup->appendChild($doc->createElement('kwd', $keyword));
+			}
+		}
+
 		/* --- Abstract --- */
 		if ($abstract = strip_tags($article->getLocalizedAbstract())) {
 			$abstractNode = $doc->createElement('abstract');
 			$articleMetaNode->appendChild($abstractNode);
 			$abstractNode->appendChild($doc->createElement('p', $abstract));
+		}
+
+		$citationDao = DAORegistry::getDAO('CitationDAO'); /** @var CitationDAO $citationDao */
+		$citations = $citationDao->getBySubmissionId($article->getId())->toArray();
+		if (count($citations)) {
+			$refList = $root
+				->appendChild($doc->createElement('back'))
+				->appendChild($doc->createElement('ref-list'));
+			/** @var Citation $citation */
+			foreach ($citations as $i => $citation) {
+				++$i;
+				$ref = $refList->appendChild($doc->createElement('ref'));
+				$ref->setAttribute('id', "R{$i}");
+				$ref->appendChild($doc->createElement('mixed-citation', $citation->getRawCitation()));
+			}
 		}
 
 		return $root;
@@ -259,6 +305,7 @@ class PorticoExportDom {
 		}
 
 		if ($email = $author->getEmail()) $root->appendChild($doc->createElement('email', $email));
+		$root->appendChild($doc->createElement('role', 'Author'));
 		if ($bio = strip_tags($author->getLocalizedBiography())) {
 			$bioNode = $doc->createElement('bio');
 			$root->appendChild($bioNode);
@@ -316,20 +363,21 @@ class PorticoExportDom {
 		// use the "e-location ID" as the "page numbers" in PubMed
 		$pages = $article->getPages();
 		$fpage = $lpage = null;
-		if (PKPString::regexp_match_get('/([0-9]+)\s*[–-]\s*([0-9]+)/i', $pages, $matches)) {
+		if (PKPString::regexp_match_get('/([0-9]+)\s*[–-\x{2013}]\s*([0-9]+)/ui', $pages, $matches)) {
 			// simple pagination (eg. "pp. 3-8")
 			[, $fpage, $lpage] = $matches;
-		} elseif (PKPString::regexp_match_get('/(e[0-9]+)\s*[–-]\s*(e[0-9]+)/i', $pages, $matches)) {
+		} elseif (PKPString::regexp_match_get('/(e[0-9]+)\s*[–-\x{2013}]\s*(e[0-9]+)/ui', $pages, $matches)) {
 			// e9 - e14, treated as page ranges
 			[, $fpage, $lpage] = $matches;
 		} elseif (PKPString::regexp_match_get('/(e[0-9]+)/i', $pages, $matches)) {
 			// single elocation-id (eg. "e12")
 			$fpage = $lpage = $matches[1];
-		} else {
-			// we need to insert something, so use the best ID possible
-			$fpage = $lpage = $article->getBestArticleId($this->_context);
 		}
-		$parentNode->appendChild($this->_document->createElement('fpage', $fpage));
-		$parentNode->appendChild($this->_document->createElement('lpage', $lpage));
+		if ($fpage) {
+			$parentNode->appendChild($this->_document->createElement('fpage', $fpage));
+		}
+		if ($lpage) {
+			$parentNode->appendChild($this->_document->createElement('lpage', $lpage));
+		}
 	}
 }

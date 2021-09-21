@@ -13,6 +13,6 @@
 <version>
 	<application>portico</application>
 	<type>plugins.importexport</type>
-	<release>1.1.0.3</release>
-	<date>2021-07-19</date>
+	<release>1.1.0.4</release>
+	<date>2022-03-30</date>
 </version>
