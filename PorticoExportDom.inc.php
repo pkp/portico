@@ -316,10 +316,10 @@ class PorticoExportDom {
 		// use the "e-location ID" as the "page numbers" in PubMed
 		$pages = $article->getPages();
 		$fpage = $lpage = null;
-		if (PKPString::regexp_match_get('/([0-9]+)\s*-\s*([0-9]+)/i', $pages, $matches)) {
+		if (PKPString::regexp_match_get('/([0-9]+)\s*[–-]\s*([0-9]+)/i', $pages, $matches)) {
 			// simple pagination (eg. "pp. 3-8")
 			[, $fpage, $lpage] = $matches;
-		} elseif (PKPString::regexp_match_get('/(e[0-9]+)\s*-\s*(e[0-9]+)/i', $pages, $matches)) {
+		} elseif (PKPString::regexp_match_get('/(e[0-9]+)\s*[–-]\s*(e[0-9]+)/i', $pages, $matches)) {
 			// e9 - e14, treated as page ranges
 			[, $fpage, $lpage] = $matches;
 		} elseif (PKPString::regexp_match_get('/(e[0-9]+)/i', $pages, $matches)) {
