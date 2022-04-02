@@ -141,9 +141,10 @@ class PorticoExportPlugin extends ImportExportPlugin
                 case 'ftp':
                     $adapter = new League\Flysystem\Adapter\Ftp([
                         'host' => $credentials['hostname'],
+                        'port' => ($credentials['port'] ?? null) ?: 21,
                         'username' => $credentials['username'],
                         'password' => $credentials['password'],
-                        'root' => $credentials['path']
+                        'root' => $credentials['path'],
                     ]);
                     break;
                 case 'loc':
@@ -152,12 +153,15 @@ class PorticoExportPlugin extends ImportExportPlugin
                     $adapter = new League\Flysystem\Sftp\SftpAdapter([
                         'host' => $credentials['hostname'],
                         'username' => $credentials['username'],
-                        'password' => $credentials['password'],
-                        'port' => 22,
-                        'root' => $credentials['path']
+                        'password' => $credentials['private_key'] ? null : $credentials['password'],
+                        'port' => ($credentials['port'] ?? null) ?: 22,
+                        'root' => $credentials['path'],
+                        'privateKey' => ($credentials['private_key'] ?? null) ?: null,
+                        'passphrase' => ($credentials['passphrase'] ?? null) ?: null,
                     ]);
                     break;
-                default: throw new Exception('Unknown endpoint type!');
+                default:
+                    throw new Exception('Unknown endpoint type!');
             }
             $fs = new League\Flysystem\Filesystem($adapter);
             $fp = fopen($path, 'r');
