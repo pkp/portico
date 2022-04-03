@@ -11,9 +11,9 @@
 <script>
 	$(function() {ldelim}
 		// Attach the form handler.
-		$('#porticoSettingsForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
+		var form = $('#porticoSettingsForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
 
-		$('#porticoSettingsForm .endpointContainer select').on('change', function(e) {ldelim}
+		form.find('.endpointContainer select').on('change', function(e) {ldelim}
 			var $endpointType = $(e.currentTarget), $container = $endpointType.closest('.endpointContainer').find('.endpointDetails');
 			switch ($endpointType.val()) {ldelim}
 				case 'loc':
@@ -43,7 +43,7 @@
 		{rdelim}).change();
 
 		// Prevent complaints about unsaved data
-		$.pkp.classes.Handler.getHandler($('#porticoSettingsForm')).formChangesTracked = false;
+		$.pkp.classes.Handler.getHandler(form).formChangesTracked = false;
 	{rdelim});
 </script>
 <form class="pkp_form" method="post" id="porticoSettingsForm" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" plugin="PorticoExportPlugin" category="importexport" verb="settings" save="true"}">
