@@ -4,8 +4,8 @@
 <!--
   * plugins/importexport/portico/locale/en_US/locale.xml
   *
-  * Copyright (c) 2014-2021 Simon Fraser University
-  * Copyright (c) 2003-2021 John Willinsky
+  * Copyright (c) 2014-2022 Simon Fraser University
+  * Copyright (c) 2003-2022 John Willinsky
   * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
   *
   * Localization strings
@@ -25,6 +25,9 @@
 	<message key="plugins.importexport.portico.endpoint.username">Username</message>
 	<message key="plugins.importexport.portico.endpoint.password">Password</message>
 	<message key="plugins.importexport.portico.endpoint.path">Path</message>
+	<message key="plugins.importexport.portico.endpoint.private_key">Private Key</message>
+	<message key="plugins.importexport.portico.endpoint.keyphrase">Keyphrase (optional)</message>
+	<message key="plugins.importexport.portico.endpoint.port">Port (optional, SFTP defaults to 22, FTP to 21)</message>
 	<message key="plugins.importexport.portico.endpointNumber">Endpoint #{$number}</message>
 	<message key="plugins.importexport.portico.newEndpoint">New Endpoint</message>
 	<message key="plugins.importexport.portico.endpoint.delete">Delete this endpoint</message>
@@ -40,4 +43,5 @@
 	<message key="plugins.importexport.portico.export.failure.creatingFile">Failed to create zip file.</message>
 	<message key="plugins.importexport.portico.export.failure.noIssueSelected">The export was aborted since no issue was selected.</message>
 	<message key="plugins.importexport.portico.export.failure.general">The export was not successful. Your server may have taken too long to send the file to the Portico FTP server. Please try manually downloading your articles to send via an external FTP client.</message>
+	<message key="plugins.importexport.portico.endpoint.authenticationType">Authentication Type</message>
 </locale>

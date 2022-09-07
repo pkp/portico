@@ -1,6 +1,27 @@
 {
-    "require": {
-        "league/flysystem": "^2.0",
-        "league/flysystem-sftp": "^2.0"
-    }
+	"description": "OJS Portico Export Plugin",
+	"homepage": "https://github.com/pkp/portico/",
+	"require": {
+		"php": ">=7.2",
+		"league/flysystem": "^1.0",
+		"league/flysystem-sftp": "^1.0"
+	},
+	"require-dev": {
+		"friendsofphp/php-cs-fixer": "^2.0",
+		"brainmaestro/composer-git-hooks": "^2.0"
+	},
+	"config": {
+		"sort-packages": true
+	},
+	"scripts": {
+		"lint": "php-cs-fixer fix --using-cache=no --diff --dry-run .",
+		"lint-fix": "php-cs-fixer fix --using-cache=no ."
+	},
+	"extra": {
+		"hooks": {
+			"pre-commit": [
+				"./lib/vendor/bin/php-cs-fixer fix --config .php_cs --allow-risky=yes"
+			]
+		}
+	}
 }
