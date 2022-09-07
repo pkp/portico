@@ -1,8 +1,8 @@
 {**
  * templates/index.tpl
  *
- * Copyright (c) 2014-2021 Simon Fraser University
- * Copyright (c) 2003-2021 John Willinsky
+ * Copyright (c) 2014-2022 Simon Fraser University
+ * Copyright (c) 2003-2022 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * List of operations this plugin can perform
@@ -13,8 +13,9 @@
 <script>
 	// Attach the JS file tab handler.
 	$(function() {ldelim}
-		$('#exportTabs').pkpHandler('$.pkp.controllers.TabHandler');
-		$('#exportTabs').tabs('option', 'cache', true);
+		$('#exportTabs')
+			.pkpHandler('$.pkp.controllers.TabHandler')
+			.tabs('option', 'cache', true);
 	{rdelim});
 </script>
 <div id="exportTabs">
@@ -30,7 +31,10 @@
 		<script>
 			$(function() {ldelim}
 				// Attach the form handler.
-				$('#exportIssuesXmlForm').pkpHandler('$.pkp.controllers.form.FormHandler');
+				var form = $('#exportIssuesXmlForm').pkpHandler('$.pkp.controllers.form.FormHandler');
+				form.find('button[type=submit]').click(function () {
+					form.trigger('unregisterAllForms');
+				});
 			{rdelim});
 			{literal}
 			function toggleIssues() {

@@ -47,6 +47,15 @@ msgstr "Password"
 msgid "plugins.importexport.portico.endpoint.path"
 msgstr "Path"
 
+msgid "plugins.importexport.portico.endpoint.private_key"
+msgstr "Private Key"
+
+msgid "plugins.importexport.portico.endpoint.keyphrase"
+msgstr "Keyphrase (optional)"
+
+msgid "plugins.importexport.portico.endpoint.port"
+msgstr "Port (optional, SFTP defaults to 22, FTP to 21)"
+
 msgid "plugins.importexport.portico.endpointNumber"
 msgstr "Endpoint #{$number}"
 
@@ -91,3 +100,6 @@ msgstr "The export was aborted since no issue was selected."
 
 msgid "plugins.importexport.portico.export.failure.general"
 msgstr "The export was not successful. Your server may have taken too long to send the file to the Portico FTP server. Please try manually downloading your articles to send via an external FTP client."
+
+msgid "plugins.importexport.portico.endpoint.authenticationType"
+msgstr "Authentication Type"
