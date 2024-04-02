@@ -233,16 +233,24 @@ class PorticoExportPlugin extends ImportExportPlugin
 
                     // add galleys
                     $fileService = Services::get('file');
+                    $archivePath = rtrim(Config::getVar('files', 'files_dir'), '/');
+
                     foreach ($article->getGalleys() as $galley) {
                         $submissionFile = Repo::submissionFile()->get($galley->getData('submissionFileId'));
                         if (!$submissionFile) {
                             continue;
                         }
 
-                        $filePath = $fileService->get($submissionFile->getData('fileId'))->path;
-                        if (!$zip->addFromString($article->getId() . '/' . basename($filePath), $fileService->fs->read($filePath))) {
-                            error_log("Unable add file ${filePath} to Portico ZIP");
+                        $filePath = $archivePath.'/'.$fileService->get($submissionFile->getData('fileId'))->path;
+
+                        if (!file_exists($filePath)) {
+                            error_log("File does not exist: ".$filePath);
                             throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
+                        }
+                    
+                        if (!$zip->addFile($filePath, $article->getId() . '/' . basename($filePath))) {
+                            error_log("Unable add file to Portico ZIP: ".$filePath);
+                            throw new Exception(__('plugins..importexport.portico.export.failure.creatingFile'));
                         }
                     }
                 }
