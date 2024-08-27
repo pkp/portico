@@ -155,7 +155,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                 case 'ftp':
                     $adapter = new \League\Flysystem\Ftp\FtpAdapter(\League\Flysystem\Ftp\FtpConnectionOptions::fromArray([
                         'host' => $credentials['hostname'],
-                        'port' => ($credentials['port'] ?? null) ?: 21,
+                        'port' => ((int) $credentials['port'] ?? null) ?: 21,
                         'username' => $credentials['username'],
                         'password' => $credentials['password'],
                         'root' => $credentials['path'],
@@ -171,7 +171,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                             password: !empty($credentials['private_key']) ? null : $credentials['password'],
                             privateKey: $credentials['private_key'] ?? null ?: null, // Convert possible empty string to null
                             passphrase: $credentials['passphrase'] ?? null ?: null, // Convert possible empty string to null
-                            port: $credentials['port'] ?? 22,
+                            port: ((int) $credentials['port'] ?? null) ?: 22,
                         ),
                         $credentials['path'] ?? '/',
                         \League\Flysystem\UnixVisibility\PortableVisibilityConverter::fromArray([
