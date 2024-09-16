@@ -1,0 +1,78 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: Spanish\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2020-12-15T23:18:52+00:00\n"
+"PO-Revision-Date: 2020-12-15T23:18:52+00:00\n"
+"Language: SP\n"
+
+msgid "plugins.importexport.portico.settings"
+msgstr "Configuraciones"
+
+msgid "plugins.importexport.portico.displayName"
+msgstr "Complemento de exportación Portico"
+
+msgid "plugins.importexport.portico.password.description"
+msgstr "Tenga en cuenta que la contraseña proporcionada aquí se almacena como texto plano en la base de datos."
+
+msgid "plugins.importexport.portico.description"
+msgstr "Este complemento se puede utilizar para exportar el contenido de su revista para su inclusión en el <a href=\"https://www.portico.org\" target=\"_blank\">Servicio de preservación digital Portico</a>. El contenido puede ser descargado manualmente a su computadora para posteriormente enviarlo a Portico, o enviarse directamente a su cuenta en el servidor FTP Portico simplemente configurando a continuación sus credenciales. Acceda a la pestaña <em>Exportar incidentes<em> para exportar los datos."
+
+msgid "plugins.importexport.portico.description.short"
+msgstr "Este complemento se puede utilizar para exportar el contenido de su revista para su inclusión en el servicio de preservación digital de Portico. El contenido puede descargarse manualmente a su computadora para su posterior entrega a Portico, o puede enviarse directamente a su cuenta en el servidor FTP de Portico."
+
+msgid "plugins.importexport.portico.issnWarning"
+msgstr "Nota: Parece que no ha configurado un ISSN en línea para su revista. Esto no es estrictamente obligatorio, pero simplificará el proceso de depósito. Puede configurar un ISSN en <a href=\"{$setupUrl}\" target=\"_blank\">Configuración de la revista</a>."
+
+msgid "plugins.importexport.portico.abbreviationWarning"
+msgstr "Nota: Parece que no ha configurado una abreviatura para su revista. Esto no es estrictamente obligatorio, pero simplificará el proceso de depósito. Puede crear una abreviatura desde <a href=\"{$setupUrl}\" target=\"_blank\">Journal Setup Step 1.1</a>."
+
+msgid "plugins.importexport.portico.porticoHost"
+msgstr "Host"
+
+msgid "plugins.importexport.portico.porticoHostInstructions"
+msgstr "ftp.portico.org a menos que se indique lo contrario"
+
+msgid "plugins.importexport.portico.porticoUsername"
+msgstr "Usuario"
+
+msgid "plugins.importexport.portico.porticoPassword"
+msgstr "Contraseña"
+
+msgid "plugins.importexport.portico.export.issues"
+msgstr "Exportar incidentes"
+
+msgid "plugins.importexport.portico.export.ftp"
+msgstr "Exportar incidentes a Portico"
+
+msgid "plugins.importexport.portico.export.toggleSelection"
+msgstr "Alternar selección"
+
+msgid "plugins.importexport.portico.export.success"
+msgstr "¡La exportación se ejecutó con éxito!"
+
+msgid "plugins.importexport.portico.export.failure.connection"
+msgstr "No se pudo conectar al servidor FTP en {$host}."
+
+msgid "plugins.importexport.portico.export.failure.credentials"
+msgstr "No se pudo iniciar sesión en el servidor FTP con las credenciales proporcionadas."
+
+msgid "plugins.importexport.portico.export.failure.settings"
+msgstr "Para exportar los incidentes a Portico, debe configurar las credenciales en la pestaña de configuración."
+
+msgid "plugins.importexport.portico.export.failure.loadingIssue"
+msgstr "No se pudo cargar el incidente con el ID #{$issueId}."
+
+msgid "plugins.importexport.portico.export.failure.creatingFile"
+msgstr "No se pudo crear el archivo zip."
+
+msgid "plugins.importexport.portico.export.failure.noIssueSelected"
+msgstr "La exportación se canceló porque no se seleccionó ningún incidente."
+
+msgid "plugins.importexport.portico.export.failure.general"
+msgstr "La exportación no se realizó correctamente. Es posible que su servidor haya tardado demasiado en enviar el archivo al servidor FTP de Portico. Intente descargar manualmente sus artículos para enviarlos a través de un cliente FTP externo."
