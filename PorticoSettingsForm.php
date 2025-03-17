@@ -14,17 +14,16 @@
 
 namespace APP\plugins\importexport\portico;
 
-use PKP\form\Form;
 use APP\template\TemplateManager;
+use Exception;
+use PKP\form\Form;
 use PKP\form\validation\FormValidatorArrayCustom;
 
 class PorticoSettingsForm extends Form
 {
-    /** @var int $contextId */
-    private $contextId;
+    private int $contextId;
 
-    /** @var PorticoExportPlugin $plugin */
-    private $plugin;
+    private PorticoExportPlugin $plugin;
 
     /**
      * Constructor

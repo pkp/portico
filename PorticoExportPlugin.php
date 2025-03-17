@@ -3,8 +3,8 @@
 /**
  * @file PorticoExportPlugin.php
  *
- * Copyright (c) 2014-2022 Simon Fraser University
- * Copyright (c) 2003-2022 John Willinsky
+ * Copyright (c) 2014-2025 Simon Fraser University
+ * Copyright (c) 2003-2025 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class PorticoExportPlugin
@@ -13,16 +13,16 @@
 
 namespace APP\plugins\importexport\portico;
 
+use APP\core\Services;
+use APP\facades\Repo;
+use APP\notification\NotificationManager;
+use APP\template\TemplateManager;
+use Exception;
+use PKP\context\Context;
+use PKP\core\JSONMessage;
+use PKP\db\DAORegistry;
 use PKP\plugins\ImportExportPlugin;
 use ZipArchive;
-use Exception;
-use PKP\core\JSONMessage;
-use APP\template\TemplateManager;
-use PKP\db\DAORegistry;
-use APP\i18n\AppLocale;
-use APP\notification\NotificationManager;
-use APP\facades\Repo;
-use APP\core\Services;
 
 class PorticoExportPlugin extends ImportExportPlugin
 {
@@ -74,13 +74,13 @@ class PorticoExportPlugin extends ImportExportPlugin
 
         // set the issn and abbreviation template variables
         foreach (['onlineIssn', 'printIssn'] as $name) {
-            if ($value = $this->_context->getSetting($name)) {
+            if ($value = $this->_context->getData($name)) {
                 $templateManager->assign('issn', $value);
                 break;
             }
         }
 
-        if ($value = $this->_context->getLocalizedSetting('abbreviation')) {
+        if ($value = $this->_context->getLocalizedData('abbreviation')) {
             $templateManager->assign('abbreviation', $value);
         }
 
@@ -92,7 +92,7 @@ class PorticoExportPlugin extends ImportExportPlugin
      */
     private function _createFilename(): string
     {
-        return $this->_context->getLocalizedSetting('acronym') . '_batch_' . date('Y-m-d-H-i-s') . '.zip';
+        return $this->_context->getLocalizedData('acronym') . '_batch_' . date('Y-m-d-H-i-s') . '.zip';
     }
 
     /**
@@ -137,6 +137,7 @@ class PorticoExportPlugin extends ImportExportPlugin
      * Exports a zip file with the selected issues to the configured Portico account
      *
      * @param string $path the path of the zip file
+     * @throws Exception|\League\Flysystem\FilesystemException
      */
     private function _export(string $path): void
     {
@@ -200,6 +201,7 @@ class PorticoExportPlugin extends ImportExportPlugin
      * Creates a zip file with the given issues
      *
      * @return string the path of the creates zip file
+     * @throws Exception
      */
     private function _createFile(array $issueIds): string
     {
@@ -227,7 +229,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                     $document = new PorticoExportDom($this->_context, $issue, $article);
                     $articlePathName = $article->getId() . '/' . $article->getId() . '.xml';
                     if (!$zip->addFromString($articlePathName, $document)) {
-                        error_log("Unable add ${articlePathName} to Portico ZIP");
+                        error_log("Unable add {$articlePathName} to Portico ZIP");
                         throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
                     }
 
@@ -242,7 +244,7 @@ class PorticoExportPlugin extends ImportExportPlugin
 
                         $filePath = $fileService->get($submissionFile->getData('fileId'))->path;
                         if (!$zip->addFromString($article->getId() . '/' . basename($filePath), $fileService->fs->read($filePath))) {
-                            error_log("Unable add file ${filePath} to Portico ZIP");
+                            error_log("Unable add file {$filePath} to Portico ZIP");
                             throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
                         }
                     }
@@ -266,7 +268,6 @@ class PorticoExportPlugin extends ImportExportPlugin
         if ($request->getUserVar('verb') == 'settings') {
             $user = $request->getUser();
             $this->addLocaleData();
-            AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON, LOCALE_COMPONENT_PKP_MANAGER);
             $form = new PorticoSettingsForm($this, $request->getContext()->getId());
 
             if ($request->getUserVar('save')) {
@@ -274,7 +275,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                 if ($form->validate()) {
                     $form->execute();
                     $notificationManager = new NotificationManager();
-                    $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SUCCESS);
+                    $notificationManager->createTrivialNotification($user->getId());
                 }
             } else {
                 $form->initData();
