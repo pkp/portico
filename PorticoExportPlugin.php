@@ -234,7 +234,8 @@ class PorticoExportPlugin extends ImportExportPlugin
                     // add galleys
                     $fileService = Services::get('file');
                     foreach ($article->getGalleys() as $galley) {
-                        $submissionFile = Repo::submissionFile()->get($galley->getData('submissionFileId'));
+                        $submissionFileId = $galley->getData('submissionFileId');
+                        $submissionFile = $submissionFileId ? Repo::submissionFile()->get($submissionFileId) : null;
                         if (!$submissionFile) {
                             continue;
                         }
