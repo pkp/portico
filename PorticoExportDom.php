@@ -26,6 +26,7 @@ use PKP\db\DAORegistry;
 use APP\facades\Repo;
 use APP\author\Author;
 use APP\core\Services;
+use APP\publication\Publication;
 
 class PorticoExportDom
 {
@@ -50,6 +51,9 @@ class PorticoExportDom
     /** @var Section Section */
     private $_section;
 
+    /** @var Publication Publication */
+    private $_publication;
+
     /**
      * Constructor
      */
@@ -61,6 +65,7 @@ class PorticoExportDom
         if ($sectionId = $this->_article->getSectionId()) {
             $this->_section = Repo::section()->get($sectionId);
         }
+        $this->_publication = $article->getCurrentPublication();
 
         $domImplementation = new DOMImplementation();
         $this->_document = $domImplementation->createDocument(
@@ -90,6 +95,7 @@ class PorticoExportDom
         $article = $this->_article;
         $issue = $this->_issue;
         $section = $this->_section;
+        $publication = $this->_publication;
 
         /* --- Article --- */
         $root = $doc->createElement('article');
@@ -113,7 +119,7 @@ class PorticoExportDom
         $journalMetaNode->appendChild($journalTitleGroupNode);
 
         // journal-title
-        $journalTitleGroupNode->appendChild($doc->createElement('journal-title', $journal->getLocalizedPageHeaderTitle()));
+        $journalTitleGroupNode->appendChild($doc->createElement('journal-title', $journal->getLocalizedData('name')));
 
         // issn
         foreach (['printIssn' => 'print', 'onlineIssn' => 'online-only'] as $name => $format) {
@@ -162,19 +168,19 @@ class PorticoExportDom
                 ->appendChild($doc->createElement('subj-group'));
             $subjGroupNode->setAttribute('xml:lang', $journal->getPrimaryLocale());
             $subjGroupNode->setAttribute('subj-group-type', 'heading');
-            $subjGroupNode->appendChild($doc->createElement('subject', $section->getLocalizedTitle()));
+            $subjGroupNode->appendChild($doc->createElement('subject', $section->getLocalizedData('title')));
         }
 
         // article-title
         $titleGroupNode = $doc->createElement('title-group');
         $articleMetaNode->appendChild($titleGroupNode);
-        $titleGroupNode->appendChild($doc->createElement('article-title', $article->getLocalizedTitle()));
+        $titleGroupNode->appendChild($doc->createElement('article-title', $article->getLocalizedData('title')));
 
         // authors
         $authorsNode = $this->_buildAuthors();
         $articleMetaNode->appendChild($authorsNode);
 
-        if ($datePublished = $article->getDatePublished() ?: $issue->getDatePublished()) {
+        if ($datePublished = $publication->getData('datePublished') ?: $issue->getDatePublished()) {
             $dateNode = $this->_buildPubDate(new DateTimeImmutable($datePublished));
             $articleMetaNode->appendChild($dateNode);
         }
@@ -208,9 +214,9 @@ class PorticoExportDom
         }
 
         // keywords
-        $submissionKeywordDao = DAORegistry::getDAO('SubmissionKeywordDAO'); /** @var SubmissionKeywordDAO $submissionKeywordDao */
-        foreach ($submissionKeywordDao->getKeywords($article->getId(), $journal->getSupportedLocales()) as $locale => $keywords) {
-            if (empty($keywords)) {
+        $publicationKeywords = $publication->getData('keywords');
+        foreach($publicationKeywords as $locale => $keywords) {
+            if(empty($keywords)) {
                 continue;
             }
             $kwGroup = $articleMetaNode->appendChild($doc->createElement('kwd-group'));
@@ -221,7 +227,7 @@ class PorticoExportDom
         }
 
         /* --- Abstract --- */
-        if ($abstract = strip_tags($article->getLocalizedAbstract())) {
+        if ($abstract = strip_tags($publication->getLocalizedData('abstract'))) {
             $abstractNode = $doc->createElement('abstract');
             $articleMetaNode->appendChild($abstractNode);
             $abstractNode->appendChild($doc->createElement('p', $abstract));
@@ -328,7 +334,7 @@ class PorticoExportDom
         $nameNode->appendChild($doc->createElement('surname', $author->getLocalizedFamilyName($locale)));
         $nameNode->appendChild($doc->createElement('given-names', $author->getLocalizedGivenName($locale)));
 
-        $affiliation = $author->getLocalizedAffiliation();
+        $affiliation = $author->getLocalizedAffiliationNames();
         if (is_array($affiliation)) {
             $affiliation = reset($affiliation);
         }
@@ -399,19 +405,20 @@ class PorticoExportDom
     private function _buildPages(DOMElement $parentNode): void
     {
         $article = $this->_article;
+        $publication = $this->_publication;
         /* --- fpage / lpage --- */
         // there is some ambiguity for online journals as to what
         // "page numbers" are; for example, some journals (eg. JMIR)
         // use the "e-location ID" as the "page numbers" in PubMed
-        $pages = $article->getPages();
+        $pages = $publication->getData('pages');
         $fpage = $lpage = null;
-        if (PKPString::regexp_match_get('/([0-9]+)\s*[–-\x{2013}]\s*([0-9]+)/ui', $pages, $matches)) {
+        if (preg_match('/([0-9]+)\s*[–-\x{2013}]\s*([0-9]+)/ui', $pages, $matches)) {
             // simple pagination (eg. "pp. 3-8")
             [, $fpage, $lpage] = $matches;
-        } elseif (PKPString::regexp_match_get('/(e[0-9]+)\s*[–-\x{2013}]\s*(e[0-9]+)/ui', $pages, $matches)) {
+        } elseif (preg_match('/(e[0-9]+)\s*[–-\x{2013}]\s*(e[0-9]+)/ui', $pages, $matches)) {
             // e9 - e14, treated as page ranges
             [, $fpage, $lpage] = $matches;
-        } elseif (PKPString::regexp_match_get('/(e[0-9]+)/i', $pages, $matches)) {
+        } elseif (preg_match('/(e[0-9]+)/i', $pages, $matches)) {
             // single elocation-id (eg. "e12")
             $fpage = $lpage = $matches[1];
         }
