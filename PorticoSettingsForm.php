@@ -3,8 +3,8 @@
 /**
  * @file PorticoSettingsForm.php
  *
- * Copyright (c) 2014-2022 Simon Fraser University
- * Copyright (c) 2003-2022 John Willinsky
+ * Copyright (c) 2014-2025 Simon Fraser University
+ * Copyright (c) 2003-2025 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class PorticoSettingsForm
@@ -22,16 +22,12 @@ use PKP\form\validation\FormValidatorArrayCustom;
 class PorticoSettingsForm extends Form
 {
     private int $contextId;
-
     private PorticoExportPlugin $plugin;
 
     /**
      * Constructor
-     *
-     * @param $plugin PorticoExportPlugin
-     * @param $contextId int
      */
-    public function __construct(PorticoExportPlugin $plugin, $contextId)
+    public function __construct(PorticoExportPlugin $plugin, int $contextId)
     {
         $this->contextId = $contextId;
         $this->plugin = $plugin;
@@ -46,7 +42,7 @@ class PorticoSettingsForm extends Form
     /**
      * @copydoc Form::initData()
      */
-    public function initData()
+    public function initData(): void
     {
         $this->setData('endpoints', $this->plugin->getEndpoints($this->contextId));
     }

@@ -22,6 +22,7 @@ use PKP\context\Context;
 use PKP\core\JSONMessage;
 use PKP\db\DAORegistry;
 use PKP\plugins\ImportExportPlugin;
+use PKP\plugins\PluginSettingsDAO;
 use ZipArchive;
 
 class PorticoExportPlugin extends ImportExportPlugin
@@ -125,6 +126,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                 'username' => $username,
                 'password' => $password,
             ]]);
+            /* @var PluginSettingsDAO $pluginSettingsDao */
             $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
             foreach (['porticoHost', 'porticoUsername', 'porticoPassword'] as $settingName) {
                 $pluginSettingsDao->deleteSetting($contextId, $this->getName(), $settingName);

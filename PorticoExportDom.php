@@ -14,7 +14,6 @@
 namespace APP\plugins\importexport\portico;
 
 use APP\author\Author;
-use APP\core\Application;
 use APP\core\Services;
 use APP\facades\Repo;
 use APP\issue\Issue;
@@ -22,14 +21,14 @@ use APP\journal\Journal;
 use APP\section\Section;
 use APP\submission\Submission;
 use DateTimeImmutable;
+use DOMDocument;
+use DOMException;
 use DOMImplementation;
 use DOMElement;
 use PKP\citation\Citation;
 use PKP\citation\CitationDAO;
 use PKP\context\Context;
-use PKP\controlledVocab\ControlledVocab;
 use PKP\db\DAORegistry;
-use PKP\facades\Locale;
 use PKP\galley\Galley;
 
 class PorticoExportDom
@@ -40,62 +39,53 @@ class PorticoExportDom
     /** @var string DTD ID of the exported XML */
     private const PUBMED_DTD_ID = '-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN';
 
-    /** @var Context Context */
-    private $_context;
-
-    /** @var Issue Issue */
-    private $_issue;
-
-    /** @var Submission Submission */
-    private $_article;
-
-    /** @var DOMElement Document node */
-    private $_document;
-
-    /** @var Section Section */
-    private $_section;
+    private Context $context;
+    private DOMElement|DOMDocument $document;
+    private Issue $issue;
+    private Section $section;
+    private Submission $article;
 
     /**
      * Constructor
      */
     public function __construct(Journal $context, Issue $issue, Submission $article)
     {
-        $this->_context = $context;
-        $this->_issue = $issue;
-        $this->_article = $article;
-        if ($sectionId = $this->_article->getSectionId()) {
-            $this->_section = Repo::section()->get($sectionId);
+        $this->context = $context;
+        $this->issue = $issue;
+        $this->article = $article;
+        if ($sectionId = $this->article->getSectionId()) {
+            $this->section = Repo::section()->get($sectionId);
         }
 
         $domImplementation = new DOMImplementation();
-        $this->_document = $domImplementation->createDocument(
+        $this->document = $domImplementation->createDocument(
             '1.0',
             '',
             $domImplementation->createDocumentType('article', self::PUBMED_DTD_ID, self::PUBMED_DTD_URL)
         );
-        $articleNode = $this->_buildArticle();
-        $this->_document->appendChild($articleNode);
+        $articleNode = $this->buildArticle();
+        $this->document->appendChild($articleNode);
     }
 
     /**
-     * Serializes the document
+     * Serializes the document.
     */
     public function __toString(): string
     {
-        return $this->_document->saveXML();
+        return $this->document->saveXML();
     }
 
     /**
      * Generate the Article node.
      */
-    private function _buildArticle(): DOMElement
+    private function buildArticle(): DOMElement
     {
-        $journal = $this->_context;
-        $doc = $this->_document;
-        $article = $this->_article;
+        $journal = $this->context;
+        $doc = $this->document;
+        $article = $this->article;
         $publication = $article->getCurrentPublication();
-        $issue = $this->_issue;
-        $section = $this->_section;
+        $issue = $this->issue;
+        $section = $this->section;
 
         /* --- Article --- */
         $root = $doc->createElement('article');
@@ -177,11 +167,30 @@ class PorticoExportDom
         $titleGroupNode->appendChild($doc->createElement('article-title', $publication->getLocalizedTitle()));
 
         // authors
-        $authorsNode = $this->_buildAuthors();
-        $articleMetaNode->appendChild($authorsNode);
+        $authorsNode = $this->buildAuthors();
+        $articleMetaNode->appendChild($authorsNode['contribGroupElement']);
+
+        $institutions = $authorsNode['institutions'];
+        foreach ($institutions as $affiliationToken => $institution) {
+            $affNode = $articleMetaNode->appendChild($doc->createElement('aff'))
+                ->setAttribute('id', $affiliationToken)->parentNode;
+            if (isset($institution['id'])) {
+                $institutionWrapNode = $affNode->appendChild($doc->createElement('institution-wrap'));
+                $institutionWrapNode->appendChild($doc->createElement('institution'))
+                    ->appendChild($doc->createTextNode($institution['name']))->parentNode
+                    ->setAttribute('content-type', 'orgname');
+                $institutionWrapNode->appendChild($doc->createElement('institution-id'))
+                    ->appendChild($doc->createTextNode($institution['id']))->parentNode
+                    ->setAttribute('institution-id-type', 'ROR');
+            } else {
+                $affNode->appendChild($doc->createElement('institution'))
+                    ->appendChild($doc->createTextNode($institution['name']))->parentNode
+                    ->setAttribute('content-type', 'orgname');
+            }
+        }
 
         if ($datePublished = $publication->getData('datePublished') ?: $issue->getDatePublished()) {
-            $dateNode = $this->_buildPubDate(new DateTimeImmutable($datePublished));
+            $dateNode = $this->buildPubDate(new DateTimeImmutable($datePublished));
             $articleMetaNode->appendChild($dateNode);
         }
 
@@ -192,12 +201,13 @@ class PorticoExportDom
         if ($n = $issue->getNumber()) {
             $articleMetaNode->appendChild($doc->createElement('issue', $n));
         }
-        $this->_buildPages($articleMetaNode);
+        $this->buildPages($articleMetaNode);
 
         $galleys = $publication->getData('galleys')->all();
+
         // supplementary-material (the first galley is reserved for the self-uri link)
-        foreach (array_slice($galleys, 1) as $galley) {
-            if ($supplementNode = $this->_buildSupplementNode($galley)) {
+        foreach (array_slice($galleys, 1) as $galley) { /* @var Galley $galley */
+            if ($supplementNode = $this->buildSupplementNode($galley)) {
                 $articleMetaNode->appendChild($supplementNode);
             } else {
                 error_log('Unable to add galley ' . $galley->getData('id') . ' to article ' . $article->getId());
@@ -206,7 +216,7 @@ class PorticoExportDom
 
         // self-uri
         if ($galley = reset($galleys)) {
-            if ($selfUriNode = $this->_buildSelfUriNode($galley)) {
+            if ($selfUriNode = $this->buildSelfUriNode($galley)) {
                 $articleMetaNode->appendChild($selfUriNode);
             } else {
                 error_log('Unable to add galley ' . $galley->getData('id') . ' to article ' . $article->getId());
@@ -214,13 +224,7 @@ class PorticoExportDom
         }
 
         // keywords
-        $keywordVocabs = Repo::controlledVocab()->getBySymbolic(
-            ControlledVocab::CONTROLLED_VOCAB_SUBMISSION_KEYWORD,
-            Application::ASSOC_TYPE_PUBLICATION,
-            $publication->getId(),
-            $journal->getSupportedLocales()
-        );
-
+        $keywordVocabs = $publication->getData('keywords');
         foreach ($keywordVocabs as $locale => $keywords) {
             if (empty($keywords)) {
                 continue;
@@ -250,7 +254,8 @@ class PorticoExportDom
                 ++$i;
                 $ref = $refList->appendChild($doc->createElement('ref'));
                 $ref->setAttribute('id', "R{$i}");
-                $ref->appendChild($doc->createElement('mixed-citation', $citation->getRawCitation()));
+                $ref->appendChild($doc->createElement('mixed-citation'))
+                    ->appendChild($doc->createTextNode($citation->getRawCitation()));
             }
         }
 
@@ -258,10 +263,9 @@ class PorticoExportDom
     }
 
     /**
-     * Retrieve the file information from a galley
-     * @return array
+     * Retrieve the file information from a galley.
      */
-    private function _getFileInformation(Galley $galley)
+    private function getFileInformation(Galley $galley): ?array
     {
         if (!($fileId = $galley->getData('submissionFileId'))) {
             return null;
@@ -270,7 +274,7 @@ class PorticoExportDom
         $submissionFile = Repo::submissionFile()->get($fileId);
         $file = $fileService->get($submissionFile->getData('fileId'));
         return [
-            'path' => $this->_article->getId() . '/' . basename($file->path),
+            'path' => $this->article->getId() . '/' . basename($file->path),
             'mimetype' => $file->mimetype
         ];
     }
@@ -278,11 +282,11 @@ class PorticoExportDom
     /**
      * Generate the self-uri node of the article.
      */
-    private function _buildSelfUriNode(Galley $galley): DOMElement
+    private function buildSelfUriNode(Galley $galley): ?DOMElement
     {
-        $doc = $this->_document;
+        $doc = $this->document;
         $node = null;
-        if ($fileInfo = $this->_getFileInformation($galley)) {
+        if ($fileInfo = $this->getFileInformation($galley)) {
             ['path' => $path, 'mimetype' => $mimetype] = $fileInfo;
             $node = $doc->createElement('self-uri', $path);
             $node->setAttribute('content-type', $mimetype);
@@ -300,11 +304,11 @@ class PorticoExportDom
     /**
      * Generate a supplementary-material node for a galley.
      */
-    private function _buildSupplementNode(Galley $galley): ?DOMElement
+    private function buildSupplementNode(Galley $galley): ?DOMElement
     {
-        $doc = $this->_document;
+        $doc = $this->document;
         $node = $doc->createElement('supplementary-material');
-        if ($fileInfo = $this->_getFileInformation($galley)) {
+        if ($fileInfo = $this->getFileInformation($galley)) {
             ['path' => $path, 'mimetype' => $mimetype] = $fileInfo;
             $node->setAttribute('mimetype', $mimetype);
             $node->setAttribute('xlink:href', $path);
@@ -322,66 +326,12 @@ class PorticoExportDom
     }
 
     /**
-     * Generate the Author node DOM for the specified author.
-     *
-     * @param Author $author Author
+     * Creates the pub-date node.
      */
-    private function _buildAuthor(Author $author): DOMElement
+    private function buildPubDate(DateTimeImmutable $date): DOMElement
     {
-        $doc = $this->_document;
-        $locale = Locale::getLocale();
-
-        $root = $this->_document->createElement('contrib');
-        $root->setAttribute('contrib-type', 'author');
-
-        $nameNode = $this->_document->createElement('name');
-        $root->appendChild($nameNode);
-
-        $nameNode->appendChild($doc->createElement('surname', $author->getFamilyName($locale)));
-        $nameNode->appendChild($doc->createElement('given-names', $author->getGivenName($locale)));
-
-        $affiliation = $author->getLocalizedAffiliation();
-        if (is_array($affiliation)) {
-            $affiliation = reset($affiliation);
-        }
-        if ($affiliation) {
-            $root->appendChild($doc->createElement('aff', $affiliation));
-        }
-        if ($url = $author->getUrl()) {
-            $root->appendChild($doc->createElement('uri', $url));
-        }
-        if ($orcid = $author->getOrcid()) {
-            $orcidNode = $root->appendChild($doc->createElement('contrib-id', $orcid));
-            $orcidNode->setAttribute('contrib-id-type', 'orcid');
-            $orcidNode->setAttribute('authenticated', $author->hasVerifiedOrcid() ? 'true' : 'false');
-        }
-
-        if ($email = $author->getEmail()) {
-            $root->appendChild($doc->createElement('email', $email));
-        }
-        $root->appendChild($doc->createElement('role', 'Author'));
-        if ($bio = strip_tags($author->getLocalizedBiography())) {
-            $bioNode = $doc->createElement('bio');
-            $root->appendChild($bioNode);
-            $bioNode->appendChild($doc->createElement('p', $bio));
-        }
-
-        if ($country = $author->getCountry()) {
-            $addressNode = $this->_document->createElement('address');
-            $addressNode->appendChild($doc->createElement('country', $country));
-            $root->appendChild($addressNode);
-        }
-
-        return $root;
-    }
-
-    /**
-     * Creates pub-date node
-     */
-    private function _buildPubDate(DateTimeImmutable $date): DOMElement
-    {
-        $doc = $this->_document;
-        $root = $this->_document->createElement('pub-date');
+        $doc = $this->document;
+        $root = $this->document->createElement('pub-date');
 
         $root->setAttribute('pub-type', 'epublish');
         $root->appendChild($doc->createElement('year', $date->format('Y')));
@@ -392,26 +342,85 @@ class PorticoExportDom
     }
 
     /**
-     * Creates the authors node
+     * Creates the contrib-group node.
      */
-    private function _buildAuthors(): DOMElement
+    private function buildAuthors(): array
     {
-        $contribGroupNode = $this->_document->createElement('contrib-group');
-        foreach ($this->_article->getCurrentPublication()->getData('authors') as $author) {
-            $contribNode = $this->_buildAuthor($author);
-            $contribGroupNode->appendChild($contribNode);
+        $contribGroupNode = $this->document->createElement('contrib-group');
+        $doc = $this->document;
+        $publication = $this->article->getCurrentPublication();
+        $locale = $publication->getData('locale');
+        $affiliations = $institutions = [];
+        foreach ($publication->getData('authors') as $author) { /* @var Author $author */
+            $authorTokenList = [];
+            $root = $this->document->createElement('contrib');
+            $root->setAttribute('contrib-type', 'author');
+
+            $nameNode = $this->document->createElement('name');
+            $root->appendChild($nameNode);
+
+            $nameNode->appendChild($doc->createElement('surname', $author->getFamilyName($locale)));
+            $nameNode->appendChild($doc->createElement('given-names', $author->getGivenName($locale)));
+
+            $authorAffiliations = $author->getAffiliations();
+            foreach ($authorAffiliations as $authorAffiliation) {
+                $affiliationName = $authorAffiliation->getLocalizedName($publication->getData('locale'));
+                $affiliationToken = array_search($affiliationName, $affiliations);
+                if ($affiliationName && !$affiliationToken) {
+                    $affiliationToken = 'aff-' . (count($affiliations) + 1);
+                    $authorTokenList[] = $affiliationToken;
+                    $affiliations[$affiliationToken] = $affiliationName;
+                    $institutions[$affiliationToken]['name'] = $affiliationName;
+                    $institutions[$affiliationToken]['id'] = $authorAffiliation->getRor();
+                }
+            }
+
+
+            if ($url = $author->getUrl()) {
+                $root->appendChild($doc->createElement('uri', $url));
+            }
+            if ($orcid = $author->getOrcid()) {
+                $orcidNode = $root->appendChild($doc->createElement('contrib-id', $orcid));
+                $orcidNode->setAttribute('contrib-id-type', 'orcid');
+                $orcidNode->setAttribute('authenticated', $author->hasVerifiedOrcid() ? 'true' : 'false');
+            }
+
+            if ($email = $author->getEmail()) {
+                $root->appendChild($doc->createElement('email', $email));
+            }
+
+            foreach ($authorTokenList as $token) {
+                $root->appendChild($doc->createElement('xref'))
+                    ->setAttribute('ref-type', 'aff')->parentNode
+                    ->setAttribute('rid', $token);
+            }
+            $root->appendChild($doc->createElement('role', 'Author'));
+            if ($bio = strip_tags($author->getLocalizedBiography())) {
+                $bioNode = $doc->createElement('bio');
+                $root->appendChild($bioNode);
+                $bioNode->appendChild($doc->createElement('p', $bio));
+            }
+
+            if ($country = $author->getCountry()) {
+                $addressNode = $this->document->createElement('address');
+                $addressNode->appendChild($doc->createElement('country', $country));
+                $root->appendChild($addressNode);
+            }
+
+            $contribGroupNode->appendChild($root);
+            unset($affiliation);
         }
-        return $contribGroupNode;
+        return ['contribGroupElement' => $contribGroupNode, 'institutions' => $institutions];
     }
 
     /**
      * Set the pages
      *
-     * @param DOMElement $parentNode Parent node
+     * @throws DOMException
      */
-    private function _buildPages(DOMElement $parentNode): void
+    private function buildPages(DOMElement $parentNode): void
     {
-        $publication = $this->_article->getCurrentPublication();
+        $publication = $this->article->getCurrentPublication();
         /* --- fpage / lpage --- */
         // there is some ambiguity for online journals as to what
         // "page numbers" are; for example, some journals (eg. JMIR)
@@ -430,10 +439,10 @@ class PorticoExportDom
             $fpage = $lpage = $matches[1];
         }
         if ($fpage) {
-            $parentNode->appendChild($this->_document->createElement('fpage', $fpage));
+            $parentNode->appendChild($this->document->createElement('fpage', $fpage));
         }
         if ($lpage) {
-            $parentNode->appendChild($this->_document->createElement('lpage', $lpage));
+            $parentNode->appendChild($this->document->createElement('lpage', $lpage));
         }
     }
 }
