@@ -34,9 +34,17 @@ class PorticoSettingsForm extends Form
 
         parent::__construct($this->plugin->getTemplateResource('settingsForm.tpl'));
 
-        $this->addCheck(new FormValidatorArrayCustom($this, 'endpoints', 'required', 'plugins.importexport.portico.manager.settings.required', function ($credentials) {
-            return true;
-        }));
+        $this->addCheck(
+            new FormValidatorArrayCustom(
+                $this,
+                'endpoints',
+                'required',
+                'plugins.importexport.portico.manager.settings.required',
+                function ($credentials) {
+                    return true;
+                }
+            )
+        );
     }
 
     /**
@@ -64,6 +72,7 @@ class PorticoSettingsForm extends Form
      * @copydata Form::fetch()
      *
      * @param null|mixed $template
+     * @throws Exception
      */
     public function fetch($request, $template = null, $display = false)
     {
@@ -90,6 +99,7 @@ class PorticoSettingsForm extends Form
 
     /**
      * @copydoc Form::execute()
+     * @throws Exception
      */
     public function execute(...$functionArgs)
     {

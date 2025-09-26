@@ -60,7 +60,7 @@
 		$.pkp.classes.Handler.getHandler(form).formChangesTracked = false;
 	{rdelim});
 </script>
-<form class="pkp_form" method="post" id="porticoSettingsForm" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" plugin=$pluginName category="importexport" verb="settings" save="true"}">
+<form class="pkp_form" method="post" id="porticoSettingsForm" action="{url router=PKP\core\PKPApplication::ROUTE_COMPONENT op="manage" plugin=$pluginName category="importexport" verb="settings" save="true"}">
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="porticoSettingsFormNotification"}
 	{fbvFormArea id="porticoSettingsFormArea"}
 		<p class="pkp_help">{translate key="plugins.importexport.portico.description"}</p>

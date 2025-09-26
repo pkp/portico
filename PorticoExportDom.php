@@ -81,9 +81,11 @@ class PorticoExportDom
     private function buildArticle(): DOMElement
     {
         $journal = $this->context;
+        $journalLocale = $journal->getPrimaryLocale();
         $doc = $this->document;
         $article = $this->article;
         $publication = $article->getCurrentPublication();
+        $pubLocale = $publication->getData('locale');
         $issue = $this->issue;
         $section = $this->section;
 
@@ -100,7 +102,7 @@ class PorticoExportDom
         $articleNode->appendChild($journalMetaNode);
 
         // journal-id
-        if (($abbreviation = $journal->getLocalizedData('abbreviation')) != '') {
+        if (($abbreviation = $journal->getData('abbreviation', $pubLocale)) != '') {
             $journalMetaNode->appendChild($doc->createElement('journal-id', $abbreviation));
         }
 
@@ -109,7 +111,7 @@ class PorticoExportDom
         $journalMetaNode->appendChild($journalTitleGroupNode);
 
         // journal-title
-        $journalTitleGroupNode->appendChild($doc->createElement('journal-title', $journal->getName($journal->getPrimaryLocale())));
+        $journalTitleGroupNode->appendChild($doc->createElement('journal-title', $journal->getName($journalLocale)));
 
         // issn
         foreach (['printIssn' => 'print', 'onlineIssn' => 'online-only'] as $name => $format) {
@@ -135,7 +137,7 @@ class PorticoExportDom
         $articleNode->appendChild($articleMetaNode);
 
         // article-id (DOI)
-        if (($doi = $publication->getStoredPubId('doi'))) {
+        if (($doi = $publication->getDoi())) {
             $doiNode = $doc->createElement('article-id', $doi);
             $doiNode->setAttribute('pub-id-type', 'doi');
             $articleMetaNode->appendChild($doiNode);
@@ -156,15 +158,15 @@ class PorticoExportDom
             $subjGroupNode = $articleMetaNode
                 ->appendChild($doc->createElement('article-categories'))
                 ->appendChild($doc->createElement('subj-group'));
-            $subjGroupNode->setAttribute('xml:lang', $journal->getPrimaryLocale());
+            $subjGroupNode->setAttribute('xml:lang', $journalLocale);
             $subjGroupNode->setAttribute('subj-group-type', 'heading');
-            $subjGroupNode->appendChild($doc->createElement('subject', $section->getLocalizedTitle()));
+            $subjGroupNode->appendChild($doc->createElement('subject', $section->getData('title', $journalLocale)));
         }
 
         // article-title
         $titleGroupNode = $doc->createElement('title-group');
         $articleMetaNode->appendChild($titleGroupNode);
-        $titleGroupNode->appendChild($doc->createElement('article-title', $publication->getLocalizedTitle()));
+        $titleGroupNode->appendChild($doc->createElement('article-title', $publication->getData('title', $pubLocale)));
 
         // authors
         $authorsNode = $this->buildAuthors();
@@ -237,7 +239,7 @@ class PorticoExportDom
         }
 
         /* --- Abstract --- */
-        if ($abstract = strip_tags($publication->getLocalizedData('abstract'))) {
+        if ($abstract = strip_tags($publication->getData('abstract', $pubLocale))) {
             $abstractNode = $doc->createElement('abstract');
             $articleMetaNode->appendChild($abstractNode);
             $abstractNode->appendChild($doc->createElement('p', $abstract));
@@ -349,7 +351,7 @@ class PorticoExportDom
         $contribGroupNode = $this->document->createElement('contrib-group');
         $doc = $this->document;
         $publication = $this->article->getCurrentPublication();
-        $locale = $publication->getData('locale');
+        $pubLocale = $publication->getData('locale');
         $affiliations = $institutions = [];
         foreach ($publication->getData('authors') as $author) { /* @var Author $author */
             $authorTokenList = [];
@@ -359,12 +361,12 @@ class PorticoExportDom
             $nameNode = $this->document->createElement('name');
             $root->appendChild($nameNode);
 
-            $nameNode->appendChild($doc->createElement('surname', $author->getFamilyName($locale)));
-            $nameNode->appendChild($doc->createElement('given-names', $author->getGivenName($locale)));
+            $nameNode->appendChild($doc->createElement('surname', $author->getFamilyName($pubLocale)));
+            $nameNode->appendChild($doc->createElement('given-names', $author->getGivenName($pubLocale)));
 
             $authorAffiliations = $author->getAffiliations();
             foreach ($authorAffiliations as $authorAffiliation) {
-                $affiliationName = $authorAffiliation->getLocalizedName($publication->getData('locale'));
+                $affiliationName = $authorAffiliation->getLocalizedName($pubLocale);
                 $affiliationToken = array_search($affiliationName, $affiliations);
                 if ($affiliationName && !$affiliationToken) {
                     $affiliationToken = 'aff-' . (count($affiliations) + 1);
@@ -395,7 +397,7 @@ class PorticoExportDom
                     ->setAttribute('rid', $token);
             }
             $root->appendChild($doc->createElement('role', 'Author'));
-            if ($bio = strip_tags($author->getLocalizedBiography())) {
+            if ($bio = strip_tags($author->getData('biography', $pubLocale))) {
                 $bioNode = $doc->createElement('bio');
                 $root->appendChild($bioNode);
                 $bioNode->appendChild($doc->createElement('p', $bio));

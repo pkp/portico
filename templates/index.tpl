@@ -31,7 +31,7 @@
 	</ul>
 	<div id="settings-tab">
 		{$ftpWarning}
-		{capture assign=porticoSettingsGridUrl}{url router=$smarty.const.ROUTE_COMPONENT component="grid.settings.plugins.settingsPluginGridHandler" op="manage" plugin=$pluginName category="importexport" verb="settings" escape=false}{/capture}
+		{capture assign=porticoSettingsGridUrl}{url router=PKP\core\PKPApplication::ROUTE_COMPONENT component="grid.settings.plugins.settingsPluginGridHandler" op="manage" plugin=$pluginName category="importexport" verb="settings" escape=false}{/capture}
 		{load_url_in_div id="porticoSettingsGridContainer" url=$porticoSettingsGridUrl}
 	</div>
 	<div id="exportIssues-tab">
@@ -57,10 +57,10 @@
 			{csrf}
 			{fbvFormArea id="issuesXmlForm"}
 				{if $porticoErrorMessage}
-					<p><span class="error">{$porticoErrorMessage|escape}</strong></p>
+					<p><span class="error">{$porticoErrorMessage|escape}</span></p>
 				{/if}
 				{if $porticoSuccessMessage}
-					<p><span class="pkp_form_success">{$porticoSuccessMessage|escape}</strong></p>
+					<p><span class="pkp_form_success">{$porticoSuccessMessage|escape}</span></p>
 				{/if}
 				
 				{if !$issn}
@@ -69,7 +69,7 @@
 				{if !$abbreviation}
 					<p><strong>{translate key="plugins.importexport.portico.abbreviationWarning" setupUrl=$contextSettingsUrl}</strong></p>
 				{/if}
-				{capture assign=issuesListGridUrl}{url router=$smarty.const.ROUTE_COMPONENT component="grid.issues.ExportableIssuesListGridHandler" op="fetchGrid" escape=false}{/capture}
+				{capture assign=issuesListGridUrl}{url router=PKP\core\PKPApplication::ROUTE_COMPONENT component="grid.issues.ExportableIssuesListGridHandler" op="fetchGrid" escape=false}{/capture}
 				{load_url_in_div id="issuesListGridContainer" url=$issuesListGridUrl}
 
 				{fbvFormSection}
