@@ -33,10 +33,10 @@ msgid "plugins.importexport.portico.description.short"
 msgstr "This plugin may be used to export your journal content for inclusion in the Portico digital preservation service. Content maybe downloaded manually to your local computer for later delivery to Portico, or may be sent directly to your account on the Portico FTP server."
 
 msgid "plugins.importexport.portico.issnWarning"
-msgstr "Note: It appears that you have not configured an online ISSN for your journal. This is not strictly mandatory, but will simplify the deposit process. You may configure an ISSN in the <a href=\"{$setupUrl}\" target=\"_blank\">journal setup</a>."
+msgstr "Note: You have not configured an online ISSN for your journal. This is not mandatory, but will simplify the deposit process. You may configure an ISSN in <a href=\"{$setupUrl}\" target=\"_blank\">Journal Settings</a>."
 
 msgid "plugins.importexport.portico.abbreviationWarning"
-msgstr "Note: It appears that you have not configured an abbreviation for your journal. This is not strictly mandatory, but will simplify the deposit process. You may create an abbreviation from <a href=\"{$setupUrl}\" target=\"_blank\">Journal Setup Step 1.1</a>."
+msgstr "Note: You have not configured an abbreviation for your journal. This is not mandatory, but will simplify the deposit process. You may configure an abbreviation in <a href=\"{$setupUrl}\" target=\"_blank\">Journal Settings</a>."
 
 msgid "plugins.importexport.portico.endpoint.type"
 msgstr "Server Type"

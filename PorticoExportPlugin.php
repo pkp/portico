@@ -13,13 +13,16 @@
 
 namespace APP\plugins\importexport\portico;
 
+use APP\core\Application;
 use APP\core\Services;
 use APP\facades\Repo;
 use APP\notification\NotificationManager;
+use APP\submission\Submission;
 use APP\template\TemplateManager;
 use Exception;
 use PKP\context\Context;
 use PKP\core\JSONMessage;
+use PKP\core\PKPApplication;
 use PKP\db\DAORegistry;
 use PKP\plugins\ImportExportPlugin;
 use PKP\plugins\PluginSettingsDAO;
@@ -72,6 +75,16 @@ class PorticoExportPlugin extends ImportExportPlugin
                 }
                 break;
         }
+
+        $contextSettingsUrl = Application::get()->getDispatcher()->url(
+            Application::get()->getRequest(),
+            PKPApplication::ROUTE_PAGE,
+            $this->context->getPath(),
+            'management',
+            'settings',
+            ['context']
+        );
+        $templateManager->assign('contextSettingsUrl', $contextSettingsUrl);
 
         // set the issn and abbreviation template variables
         foreach (['onlineIssn', 'printIssn'] as $name) {
@@ -201,7 +214,7 @@ class PorticoExportPlugin extends ImportExportPlugin
     /**
      * Creates a zip file with the given issues
      *
-     * @return string the path of the creates zip file
+     * @return string the path of the created zip file
      * @throws Exception
      */
     private function createFile(array $issueIds): string
@@ -226,7 +239,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                     ->filterByIssueIds([$issueId])
                     ->orderBy($submissionCollector::ORDERBY_SEQUENCE, $submissionCollector::ORDER_DIR_ASC)
                     ->getMany();
-                foreach ($submissions as $article) {
+                foreach ($submissions as $article) { /* @var Submission $article */
                     $document = new PorticoExportDom($this->context, $issue, $article);
                     $articlePathName = $article->getId() . '/' . $article->getId() . '.xml';
                     if (!$zip->addFromString($articlePathName, $document)) {
@@ -236,7 +249,7 @@ class PorticoExportPlugin extends ImportExportPlugin
 
                     // add galleys
                     $fileService = Services::get('file');
-                    foreach ($article->getGalleys() as $galley) {
+                    foreach ($article->getData('galleys') as $galley) {
                         $submissionFileId = $galley->getData('submissionFileId');
                         $submissionFile = $submissionFileId ? Repo::submissionFile()->get($submissionFileId) : null;
                         if (!$submissionFile) {
