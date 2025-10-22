@@ -14,7 +14,6 @@
 namespace APP\plugins\importexport\portico;
 
 use APP\core\Application;
-use APP\core\Services;
 use APP\facades\Repo;
 use APP\notification\NotificationManager;
 use APP\submission\Submission;
@@ -248,8 +247,9 @@ class PorticoExportPlugin extends ImportExportPlugin
                     }
 
                     // add galleys
-                    $fileService = Services::get('file');
-                    foreach ($article->getData('galleys') as $galley) {
+                    $fileService = app()->get('file');
+                    $galleys = $article->getData('galleys') ?? [];
+                    foreach ($galleys as $galley) {
                         $submissionFileId = $galley->getData('submissionFileId');
                         $submissionFile = $submissionFileId ? Repo::submissionFile()->get($submissionFileId) : null;
                         if (!$submissionFile) {

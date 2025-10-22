@@ -22,12 +22,10 @@ use APP\section\Section;
 use APP\submission\Submission;
 use DateTimeImmutable;
 use DOMDocument;
-use DOMException;
 use DOMImplementation;
 use DOMElement;
 use PKP\citation\Citation;
 use PKP\citation\CitationDAO;
-use PKP\context\Context;
 use PKP\db\DAORegistry;
 use PKP\galley\Galley;
 
@@ -39,20 +37,13 @@ class PorticoExportDom
     /** @var string DTD ID of the exported XML */
     private const PUBMED_DTD_ID = '-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN';
 
-    private Context $context;
     private DOMElement|DOMDocument $document;
-    private Issue $issue;
     private Section $section;
-    private Submission $article;
-
     /**
      * Constructor
      */
-    public function __construct(Journal $context, Issue $issue, Submission $article)
+    public function __construct(private Journal $context, private Issue $issue, private Submission $article)
     {
-        $this->context = $context;
-        $this->issue = $issue;
-        $this->article = $article;
         if ($sectionId = $this->article->getSectionId()) {
             $this->section = Repo::section()->get($sectionId);
         }
@@ -63,6 +54,7 @@ class PorticoExportDom
             '',
             $domImplementation->createDocumentType('article', self::PUBMED_DTD_ID, self::PUBMED_DTD_URL)
         );
+        $this->document->encoding = 'UTF-8';
         $articleNode = $this->buildArticle();
         $this->document->appendChild($articleNode);
     }
@@ -416,9 +408,7 @@ class PorticoExportDom
     }
 
     /**
-     * Set the pages
-     *
-     * @throws DOMException
+     * Set the pages.
      */
     private function buildPages(DOMElement $parentNode): void
     {

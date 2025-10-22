@@ -17,20 +17,16 @@ namespace APP\plugins\importexport\portico;
 use APP\template\TemplateManager;
 use Exception;
 use PKP\form\Form;
+use PKP\form\validation\FormValidator;
 use PKP\form\validation\FormValidatorArrayCustom;
 
 class PorticoSettingsForm extends Form
 {
-    private int $contextId;
-    private PorticoExportPlugin $plugin;
-
     /**
      * Constructor
      */
-    public function __construct(PorticoExportPlugin $plugin, int $contextId)
+    public function __construct(private PorticoExportPlugin $plugin, private int $contextId)
     {
-        $this->contextId = $contextId;
-        $this->plugin = $plugin;
 
         parent::__construct($this->plugin->getTemplateResource('settingsForm.tpl'));
 
@@ -38,11 +34,9 @@ class PorticoSettingsForm extends Form
             new FormValidatorArrayCustom(
                 $this,
                 'endpoints',
-                'required',
+                FormValidator::FORM_VALIDATOR_REQUIRED_VALUE,
                 'plugins.importexport.portico.manager.settings.required',
-                function ($credentials) {
-                    return true;
-                }
+                fn () => true
             )
         );
     }
