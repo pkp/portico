@@ -64,6 +64,7 @@
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="porticoSettingsFormNotification"}
 	{fbvFormArea id="porticoSettingsFormArea"}
 		<p class="pkp_help">{translate key="plugins.importexport.portico.description"}</p>
+		<br/>
 		{foreach from=$endpoints key=endpointKey item=credentials}
 			{if $credentials.authentication === 'certificate'}
 				{assign var="isCertificate" value=true}
