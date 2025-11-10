@@ -49,7 +49,7 @@
 			$parent.find('.authentication-password').toggle(isPassword);
 			$parent.find('.authentication-certificate').toggle(!isPassword);
 			if (isPassword) {ldelim}
-				$parent.find('textarea[name$="[private_key]"]').val('');
+				$parent.find('input[name$="[private_key]"]').val('');
 				$parent.find('input[name$="[keyphrase]"]').val('');
 			{rdelim} else {ldelim}
 				$parent.find('input[name$="[password]"]').val('');
@@ -91,7 +91,7 @@
 					</div>
 					<div class="presetField sftp">
 						<div class="authentication-certificate">
-							{fbvElement type="textarea" id="endpoints-$endpointKey-private_key" name="endpoints[$endpointKey][private_key]" value=$credentials.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
+							{fbvElement type="text" id="endpoints-$endpointKey-private_key" name="endpoints[$endpointKey][private_key]" value=$credentials.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
 							{fbvElement type="text" password="true" id="endpoints-$endpointKey-keyphrase" name="endpoints[$endpointKey][keyphrase]" value=$credentials.keyphrase label="plugins.importexport.portico.endpoint.keyphrase" maxlength="1024" size=$fbvStyles.size.MEDIUM}
 						</div>
 					</div>
@@ -116,7 +116,7 @@
 				</div>
 				<div class="presetField sftp">
 					<div class="authentication-certificate">
-						{fbvElement type="textarea" id="endpoints-new-private_key" name="endpoints[new][private_key]" value=$endpoints.new.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
+						{fbvElement type="text" id="endpoints-new-private_key" name="endpoints[new][private_key]" value=$endpoints.new.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
 						{fbvElement type="text" password="true" id="endpoints-new-keyphrase" name="endpoints[new][keyphrase]" value=$endpoints.new.keyphrase label="plugins.importexport.portico.endpoint.keyphrase" maxlength="1024" size=$fbvStyles.size.MEDIUM}
 					</div>
 				</div>

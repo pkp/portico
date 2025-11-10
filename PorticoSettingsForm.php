@@ -98,8 +98,8 @@ class PorticoSettingsForm extends Form
     public function execute(...$functionArgs)
     {
         foreach ($this->getData('endpoints') ?? [] as $endpoint) {
-            if ($endpoint['private_key'] && is_file($endpoint['private_key'])) {
-                throw new Exception('Invalid private key');
+            if ($endpoint['private_key'] && !is_file($endpoint['private_key'])) {
+                throw new Exception('Private key file not found');
             }
         }
         $this->plugin->updateSetting($this->contextId, 'endpoints', $this->getData('endpoints'));
