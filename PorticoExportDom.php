@@ -14,7 +14,6 @@
 namespace APP\plugins\importexport\portico;
 
 use APP\author\Author;
-use APP\core\Services;
 use APP\facades\Repo;
 use APP\issue\Issue;
 use APP\journal\Journal;
@@ -38,7 +37,7 @@ class PorticoExportDom
     private const PUBMED_DTD_ID = '-//NLM//DTD JATS (Z39.96) Journal Archiving and Interchange DTD v1.2 20190208//EN';
 
     private DOMElement|DOMDocument $document;
-    private Section $section;
+    private ?Section $section = null;
     /**
      * Constructor
      */
@@ -264,7 +263,7 @@ class PorticoExportDom
         if (!($fileId = $galley->getData('submissionFileId'))) {
             return null;
         }
-        $fileService = Services::get('file');
+        $fileService = app()->get('file');
         $submissionFile = Repo::submissionFile()->get($fileId);
         $file = $fileService->get($submissionFile->getData('fileId'));
         return [
