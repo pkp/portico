@@ -16,6 +16,7 @@ namespace APP\plugins\importexport\portico;
 use APP\core\Application;
 use APP\facades\Repo;
 use APP\notification\NotificationManager;
+use APP\plugins\importexport\portico\classes\migration\upgrade\updatePorticoPluginName;
 use APP\submission\Submission;
 use APP\template\TemplateManager;
 use Exception;
@@ -42,7 +43,7 @@ class PorticoExportPlugin extends ImportExportPlugin
         parent::display($args, $request);
         $templateManager = TemplateManager::getManager();
         $templateManager->assign([
-            'pluginName' => self::class,
+            'pluginName' => $this->getName(),
             'ftpLibraryMissing' => !class_exists('\League\Flysystem\Ftp\FtpAdapter')
         ]);
 
@@ -330,7 +331,7 @@ class PorticoExportPlugin extends ImportExportPlugin
      */
     public function getName(): string
     {
-        return __CLASS__;
+        return 'PorticoExportPlugin';
     }
 
     /**
@@ -347,6 +348,14 @@ class PorticoExportPlugin extends ImportExportPlugin
     public function getDescription(): string
     {
         return __('plugins.importexport.portico.description.short');
+    }
+
+    /**
+     * @copydoc Plugin::getInstallMigration()
+     */
+    public function getInstallMigration(): updatePorticoPluginName
+    {
+        return new updatePorticoPluginName();
     }
 }
 
