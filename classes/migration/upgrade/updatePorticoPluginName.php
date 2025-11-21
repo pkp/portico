@@ -9,13 +9,14 @@
  *
  * @class updatePorticoPluginName
  *
- * @brief Update the plugin name to "PorticoExportPlugin"
+ * @brief Fix the plugin name in plugin settings for the Portico export plugin.
  */
 
 namespace APP\plugins\importexport\portico\classes\migration\upgrade;
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
+use PKP\install\DowngradeNotSupportedException;
 
 class updatePorticoPluginName extends Migration
 {
@@ -24,9 +25,36 @@ class updatePorticoPluginName extends Migration
      */
     public function up(): void
     {
-        DB::table('plugin_settings')
-            ->where('plugin_name', '=', 'app\plugins\importexport\portico\PorticoExportPlugin')
-            ->update(['plugin_name' => 'porticoexportplugin']);
+        $upgradeRequired = DB::table('plugin_settings')
+            ->where(DB::raw('LOWER(plugin_name)'), '=', 'app\plugins\importexport\portico\porticoexportplugin')
+            ->count();
+
+        if ($upgradeRequired > 0) {
+            // Get all portico plugin settings, order to prioritize the 3.4 settings, and clear duplicates
+            $records = DB::table('plugin_settings')
+                ->whereLike('plugin_name', '%porticoexportplugin')
+                ->orderBy('plugin_name', 'desc')
+                ->get()
+                ->keyBy('context_id');
+
+            // Delete the old settings
+            DB::table('plugin_settings')
+                ->whereLike('plugin_name', '%porticoexportplugin')
+                ->delete();
+
+            // Insert the settings with the correct plugin name
+            foreach ($records as $record) {
+                DB::table('plugin_settings')->insert(
+                    [
+                        'plugin_name' => 'porticoexportplugin',
+                        'context_id' => $record->context_id,
+                        'setting_name' => $record->setting_name,
+                        'setting_value' => $record->setting_value,
+                        'setting_type' => 'object'
+                    ]
+                );
+            }
+        }
     }
 
     /**
@@ -34,8 +62,6 @@ class updatePorticoPluginName extends Migration
      */
     public function down(): void
     {
-        DB::table('plugin_settings')
-            ->where('plugin_name', '=', 'porticoexportplugin')
-            ->update(['plugin_name' => 'app\plugins\importexport\portico\PorticoExportPlugin']);
+        throw new DowngradeNotSupportedException();
     }
 }

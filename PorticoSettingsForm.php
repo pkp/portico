@@ -86,7 +86,7 @@ class PorticoSettingsForm extends Form
                 'sftp' => 'SFTP',
                 'ftp' => 'FTP',
             ],
-            'pluginName' => $this->plugin::class,
+            'pluginName' => $this->plugin->getName(),
         ]);
         return parent::fetch($request, $template, $display);
     }
