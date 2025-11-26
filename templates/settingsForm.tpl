@@ -1,8 +1,8 @@
 {**
  * templates/settingsForm.tpl
  *
- * Copyright (c) 2014-2022 Simon Fraser University
- * Copyright (c) 2003-2022 John Willinsky
+ * Copyright (c) 2014-2025 Simon Fraser University
+ * Copyright (c) 2003-2025 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * Portico plugin settings
@@ -49,7 +49,7 @@
 			$parent.find('.authentication-password').toggle(isPassword);
 			$parent.find('.authentication-certificate').toggle(!isPassword);
 			if (isPassword) {ldelim}
-				$parent.find('textarea[name$="[private_key]"]').val('');
+				$parent.find('input[name$="[private_key]"]').val('');
 				$parent.find('input[name$="[keyphrase]"]').val('');
 			{rdelim} else {ldelim}
 				$parent.find('input[name$="[password]"]').val('');
@@ -60,10 +60,11 @@
 		$.pkp.classes.Handler.getHandler(form).formChangesTracked = false;
 	{rdelim});
 </script>
-<form class="pkp_form" method="post" id="porticoSettingsForm" action="{url router=$smarty.const.ROUTE_COMPONENT op="manage" plugin=$pluginName category="importexport" verb="settings" save="true"}">
+<form class="pkp_form" method="post" id="porticoSettingsForm" action="{url router=PKP\core\PKPApplication::ROUTE_COMPONENT op="manage" plugin=$pluginName category="importexport" verb="settings" save="true"}">
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="porticoSettingsFormNotification"}
 	{fbvFormArea id="porticoSettingsFormArea"}
 		<p class="pkp_help">{translate key="plugins.importexport.portico.description"}</p>
+		<br/>
 		{foreach from=$endpoints key=endpointKey item=credentials}
 			{if $credentials.authentication === 'certificate'}
 				{assign var="isCertificate" value=true}
@@ -90,7 +91,7 @@
 					</div>
 					<div class="presetField sftp">
 						<div class="authentication-certificate">
-							{fbvElement type="textarea" id="endpoints-$endpointKey-private_key" name="endpoints[$endpointKey][private_key]" value=$credentials.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
+							{fbvElement type="text" id="endpoints-$endpointKey-private_key" name="endpoints[$endpointKey][private_key]" value=$credentials.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
 							{fbvElement type="text" password="true" id="endpoints-$endpointKey-keyphrase" name="endpoints[$endpointKey][keyphrase]" value=$credentials.keyphrase label="plugins.importexport.portico.endpoint.keyphrase" maxlength="1024" size=$fbvStyles.size.MEDIUM}
 						</div>
 					</div>
@@ -115,7 +116,7 @@
 				</div>
 				<div class="presetField sftp">
 					<div class="authentication-certificate">
-						{fbvElement type="textarea" id="endpoints-new-private_key" name="endpoints[new][private_key]" value=$endpoints.new.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
+						{fbvElement type="text" id="endpoints-new-private_key" name="endpoints[new][private_key]" value=$endpoints.new.private_key label="plugins.importexport.portico.endpoint.private_key" size=$fbvStyles.size.MEDIUM}
 						{fbvElement type="text" password="true" id="endpoints-new-keyphrase" name="endpoints[new][keyphrase]" value=$endpoints.new.keyphrase label="plugins.importexport.portico.endpoint.keyphrase" maxlength="1024" size=$fbvStyles.size.MEDIUM}
 					</div>
 				</div>

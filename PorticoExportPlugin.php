@@ -3,8 +3,8 @@
 /**
  * @file PorticoExportPlugin.php
  *
- * Copyright (c) 2014-2022 Simon Fraser University
- * Copyright (c) 2003-2022 John Willinsky
+ * Copyright (c) 2014-2025 Simon Fraser University
+ * Copyright (c) 2003-2025 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class PorticoExportPlugin
@@ -13,33 +13,37 @@
 
 namespace APP\plugins\importexport\portico;
 
-use PKP\plugins\ImportExportPlugin;
-use ZipArchive;
-use Exception;
-use PKP\core\JSONMessage;
-use APP\template\TemplateManager;
-use PKP\db\DAORegistry;
-use APP\i18n\AppLocale;
-use APP\notification\NotificationManager;
+use APP\core\Application;
 use APP\facades\Repo;
-use APP\core\Services;
+use APP\notification\NotificationManager;
+use APP\plugins\importexport\portico\classes\migration\upgrade\updatePorticoPluginName;
+use APP\submission\Submission;
+use APP\template\TemplateManager;
+use Exception;
+use PKP\context\Context;
+use PKP\core\JSONMessage;
+use PKP\core\PKPApplication;
+use PKP\db\DAORegistry;
+use PKP\plugins\ImportExportPlugin;
+use PKP\plugins\PluginSettingsDAO;
+use ZipArchive;
 
 class PorticoExportPlugin extends ImportExportPlugin
 {
-    /** @var Context the current context */
-    private $_context;
+    private Context $context;
 
     /**
      * @copydoc ImportExportPlugin::display()
      */
     public function display($args, $request)
     {
-        $this->_context = $request->getContext();
+        $this->context = $request->getContext();
+        $locale = $this->context->getData('primaryLocale');
 
         parent::display($args, $request);
         $templateManager = TemplateManager::getManager();
         $templateManager->assign([
-            'pluginName' => self::class,
+            'pluginName' => $this->getName(),
             'ftpLibraryMissing' => !class_exists('\League\Flysystem\Ftp\FtpAdapter')
         ]);
 
@@ -54,13 +58,13 @@ class PorticoExportPlugin extends ImportExportPlugin
                 }
                 try {
                     // create zip file
-                    $path = $this->_createFile($issueIds);
+                    $path = $this->createFile($issueIds);
                     try {
                         if ($request->getUserVar('type') == 'ftp') {
-                            $this->_export($path);
+                            $this->export($path);
                             $templateManager->assign('porticoSuccessMessage', __('plugins.importexport.portico.export.success'));
                         } else {
-                            $this->_download($path);
+                            $this->download($path);
                             return;
                         }
                     } finally {
@@ -72,15 +76,25 @@ class PorticoExportPlugin extends ImportExportPlugin
                 break;
         }
 
+        $contextSettingsUrl = Application::get()->getDispatcher()->url(
+            Application::get()->getRequest(),
+            PKPApplication::ROUTE_PAGE,
+            $this->context->getPath(),
+            'management',
+            'settings',
+            ['context']
+        );
+        $templateManager->assign('contextSettingsUrl', $contextSettingsUrl);
+
         // set the issn and abbreviation template variables
         foreach (['onlineIssn', 'printIssn'] as $name) {
-            if ($value = $this->_context->getSetting($name)) {
+            if ($value = $this->context->getData($name)) {
                 $templateManager->assign('issn', $value);
                 break;
             }
         }
 
-        if ($value = $this->_context->getLocalizedSetting('abbreviation')) {
+        if ($value = $this->context->getData('abbreviation', $locale)) {
             $templateManager->assign('abbreviation', $value);
         }
 
@@ -90,9 +104,10 @@ class PorticoExportPlugin extends ImportExportPlugin
     /**
      * Generates a filename for the exported file
      */
-    private function _createFilename(): string
+    private function createFilename(): string
     {
-        return $this->_context->getLocalizedSetting('acronym') . '_batch_' . date('Y-m-d-H-i-s') . '.zip';
+        $locale = $this->context->getData('primaryLocale');
+        return $this->context->getData('acronym', $locale) . '_batch_' . date('Y-m-d-H-i-s') . '.zip';
     }
 
     /**
@@ -100,20 +115,18 @@ class PorticoExportPlugin extends ImportExportPlugin
      *
      * @param string $path the path of the zip file
      */
-    private function _download(string $path): void
+    private function download(string $path): void
     {
         header('content-type: application/zip');
-        header('content-disposition: attachment; filename=' . $this->_createFilename());
+        header('content-disposition: attachment; filename=' . $this->createFilename());
         header('content-length: ' . filesize($path));
         readfile($path);
     }
 
     /**
      * Return a list of deposit endpoints.
-     *
-     * @return array
      */
-    public function getEndpoints($contextId)
+    public function getEndpoints($contextId): array
     {
         // Convert old-style Portico credentials to a list of endpoints.
         if ($hostname = $this->getSetting($contextId, 'porticoHost')) {
@@ -125,6 +138,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                 'username' => $username,
                 'password' => $password,
             ]]);
+            /* @var PluginSettingsDAO $pluginSettingsDao */
             $pluginSettingsDao = DAORegistry::getDAO('PluginSettingsDAO');
             foreach (['porticoHost', 'porticoUsername', 'porticoPassword'] as $settingName) {
                 $pluginSettingsDao->deleteSetting($contextId, $this->getName(), $settingName);
@@ -137,10 +151,11 @@ class PorticoExportPlugin extends ImportExportPlugin
      * Exports a zip file with the selected issues to the configured Portico account
      *
      * @param string $path the path of the zip file
+     * @throws Exception|\League\Flysystem\FilesystemException
      */
-    private function _export(string $path): void
+    private function export(string $path): void
     {
-        $endpoints = $this->getEndpoints($this->_context->getId());
+        $endpoints = $this->getEndpoints($this->context->getId());
 
         // Verify that the credentials are complete
         foreach ($endpoints as $credentials) {
@@ -170,7 +185,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                             username: $credentials['username'],
                             password: !empty($credentials['private_key']) ? null : $credentials['password'],
                             privateKey: $credentials['private_key'] ?? null ?: null, // Convert possible empty string to null
-                            passphrase: $credentials['passphrase'] ?? null ?: null, // Convert possible empty string to null
+                            passphrase: $credentials['keyphrase'] ?? null ?: null, // Convert possible empty string to null
                             port: ((int) $credentials['port'] ?? null) ?: 22,
                         ),
                         $credentials['path'] ?? '/',
@@ -191,7 +206,7 @@ class PorticoExportPlugin extends ImportExportPlugin
             }
             $fs = new \League\Flysystem\Filesystem($adapter);
             $fp = fopen($path, 'r');
-            $fs->writeStream($this->_createFilename(), $fp);
+            $fs->writeStream($this->createFilename(), $fp);
             fclose($fp);
         }
     }
@@ -199,9 +214,10 @@ class PorticoExportPlugin extends ImportExportPlugin
     /**
      * Creates a zip file with the given issues
      *
-     * @return string the path of the creates zip file
+     * @return string the path of the created zip file
+     * @throws Exception
      */
-    private function _createFile(array $issueIds): string
+    private function createFile(array $issueIds): string
     {
         // create zip file
         $path = tempnam(sys_get_temp_dir(), 'tmp');
@@ -212,28 +228,29 @@ class PorticoExportPlugin extends ImportExportPlugin
         }
         try {
             foreach ($issueIds as $issueId) {
-                if (!($issue = Repo::issue()->get($issueId, $this->_context->getId()))) {
+                if (!($issue = Repo::issue()->get($issueId, $this->context->getId()))) {
                     throw new Exception(__('plugins.importexport.portico.export.failure.loadingIssue', ['issueId' => $issueId]));
                 }
 
                 // add submission XML
                 $submissionCollector = Repo::submission()->getCollector();
                 $submissions = $submissionCollector
-                    ->filterByContextIds([$this->_context->getId()])
+                    ->filterByContextIds([$this->context->getId()])
                     ->filterByIssueIds([$issueId])
                     ->orderBy($submissionCollector::ORDERBY_SEQUENCE, $submissionCollector::ORDER_DIR_ASC)
                     ->getMany();
-                foreach ($submissions as $article) {
-                    $document = new PorticoExportDom($this->_context, $issue, $article);
+                foreach ($submissions as $article) { /* @var Submission $article */
+                    $document = new PorticoExportDom($this->context, $issue, $article);
                     $articlePathName = $article->getId() . '/' . $article->getId() . '.xml';
                     if (!$zip->addFromString($articlePathName, $document)) {
-                        error_log("Unable add ${articlePathName} to Portico ZIP");
+                        error_log("Unable to add {$articlePathName} to Portico ZIP");
                         throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
                     }
 
                     // add galleys
-                    $fileService = Services::get('file');
-                    foreach ($article->getGalleys() as $galley) {
+                    $fileService = app()->get('file');
+                    $galleys = $article->getData('galleys') ?? [];
+                    foreach ($galleys as $galley) {
                         $submissionFileId = $galley->getData('submissionFileId');
                         $submissionFile = $submissionFileId ? Repo::submissionFile()->get($submissionFileId) : null;
                         if (!$submissionFile) {
@@ -242,7 +259,7 @@ class PorticoExportPlugin extends ImportExportPlugin
 
                         $filePath = $fileService->get($submissionFile->getData('fileId'))->path;
                         if (!$zip->addFromString($article->getId() . '/' . basename($filePath), $fileService->fs->read($filePath))) {
-                            error_log("Unable add file ${filePath} to Portico ZIP");
+                            error_log("Unable to add file {$filePath} to Portico ZIP");
                             throw new Exception(__('plugins.importexport.portico.export.failure.creatingFile'));
                         }
                     }
@@ -266,7 +283,6 @@ class PorticoExportPlugin extends ImportExportPlugin
         if ($request->getUserVar('verb') == 'settings') {
             $user = $request->getUser();
             $this->addLocaleData();
-            AppLocale::requireComponents(LOCALE_COMPONENT_APP_COMMON, LOCALE_COMPONENT_PKP_MANAGER);
             $form = new PorticoSettingsForm($this, $request->getContext()->getId());
 
             if ($request->getUserVar('save')) {
@@ -274,7 +290,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                 if ($form->validate()) {
                     $form->execute();
                     $notificationManager = new NotificationManager();
-                    $notificationManager->createTrivialNotification($user->getId(), NOTIFICATION_TYPE_SUCCESS);
+                    $notificationManager->createTrivialNotification($user->getId());
                 }
             } else {
                 $form->initData();
@@ -303,7 +319,7 @@ class PorticoExportPlugin extends ImportExportPlugin
      *
      * @param null|mixed $mainContextId
      */
-    public function register($category, $path, $mainContextId = null)
+    public function register($category, $path, $mainContextId = null): bool
     {
         $isRegistered = parent::register($category, $path, $mainContextId);
         $this->addLocaleData();
@@ -313,15 +329,15 @@ class PorticoExportPlugin extends ImportExportPlugin
     /**
      * @copydoc Plugin::getName()
      */
-    public function getName()
+    public function getName(): string
     {
-        return __CLASS__;
+        return 'PorticoExportPlugin';
     }
 
     /**
      * @copydoc Plugin::getDisplayName()
      */
-    public function getDisplayName()
+    public function getDisplayName(): string
     {
         return __('plugins.importexport.portico.displayName');
     }
@@ -329,9 +345,17 @@ class PorticoExportPlugin extends ImportExportPlugin
     /**
      * @copydoc Plugin::getDescription()
      */
-    public function getDescription()
+    public function getDescription(): string
     {
         return __('plugins.importexport.portico.description.short');
+    }
+
+    /**
+     * @copydoc Plugin::getInstallMigration()
+     */
+    public function getInstallMigration(): updatePorticoPluginName
+    {
+        return new updatePorticoPluginName();
     }
 }
 
