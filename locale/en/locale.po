@@ -54,7 +54,7 @@ msgid "plugins.importexport.portico.endpoint.path"
 msgstr "Path"
 
 msgid "plugins.importexport.portico.endpoint.private_key"
-msgstr "Private Key"
+msgstr "Private Key Path"
 
 msgid "plugins.importexport.portico.endpoint.keyphrase"
 msgstr "Keyphrase (optional)"

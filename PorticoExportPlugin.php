@@ -170,7 +170,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                             username: $credentials['username'],
                             password: !empty($credentials['private_key']) ? null : $credentials['password'],
                             privateKey: $credentials['private_key'] ?? null ?: null, // Convert possible empty string to null
-                            passphrase: $credentials['passphrase'] ?? null ?: null, // Convert possible empty string to null
+                            passphrase: $credentials['keyphrase'] ?? null ?: null, // Convert possible empty string to null
                             port: ((int) $credentials['port'] ?? null) ?: 22,
                         ),
                         $credentials['path'] ?? '/',
