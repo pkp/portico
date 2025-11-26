@@ -368,10 +368,10 @@ class PorticoExportDom
                 }
             }
 
-
             if ($url = $author->getUrl()) {
                 $root->appendChild($doc->createElement('uri', $url));
             }
+
             if ($orcid = $author->getOrcid()) {
                 $orcidNode = $root->appendChild($doc->createElement('contrib-id', $orcid));
                 $orcidNode->setAttribute('contrib-id-type', 'orcid');
@@ -401,7 +401,6 @@ class PorticoExportDom
             }
 
             $contribGroupNode->appendChild($root);
-            unset($affiliation);
         }
         return ['contribGroupElement' => $contribGroupNode, 'institutions' => $institutions];
     }
