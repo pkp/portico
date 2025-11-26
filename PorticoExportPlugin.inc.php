@@ -156,7 +156,7 @@ class PorticoExportPlugin extends ImportExportPlugin
                         'port' => ($credentials['port'] ?? null) ?: 22,
                         'root' => $credentials['path'],
                         'privateKey' => ($credentials['private_key'] ?? null) ?: null,
-                        'passphrase' => ($credentials['passphrase'] ?? null) ?: null,
+                        'passphrase' => ($credentials['keyphrase'] ?? null) ?: null,
                     ]);
                     break;
                 default:
