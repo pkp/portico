@@ -3,8 +3,8 @@
 /**
  * @file PorticoExportDom.php
  *
- * Copyright (c) 2014-2025 Simon Fraser University
- * Copyright (c) 2003-2025 John Willinsky
+ * Copyright (c) 2014-2026 Simon Fraser University
+ * Copyright (c) 2003-2026 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * @class PorticoExportDom
@@ -21,8 +21,8 @@ use APP\section\Section;
 use APP\submission\Submission;
 use DateTimeImmutable;
 use DOMDocument;
-use DOMImplementation;
 use DOMElement;
+use DOMImplementation;
 use PKP\citation\Citation;
 use PKP\citation\CitationDAO;
 use PKP\db\DAORegistry;
@@ -225,7 +225,7 @@ class PorticoExportDom
             $kwGroup = $articleMetaNode->appendChild($doc->createElement('kwd-group'));
             $kwGroup->setAttribute('xml:lang', substr($locale, 0, 2));
             foreach ($keywords as $keyword) {
-                $kwGroup->appendChild($doc->createElement('kwd', $keyword));
+                $kwGroup->appendChild($doc->createElement('kwd', $keyword['name']));
             }
         }
 
