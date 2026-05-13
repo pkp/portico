@@ -236,9 +236,8 @@ class PorticoExportDom
             $abstractNode->appendChild($doc->createElement('p', $abstract));
         }
 
-        $citationDao = DAORegistry::getDAO('CitationDAO'); /** @var CitationDAO $citationDao */
-        $citations = $citationDao->getByPublicationId($publication->getId())->toArray();
-        if (count($citations)) {
+        $citations = $publication->getData('citations');
+        if ($citations?->isNotEmpty()) {
             $refList = $root
                 ->appendChild($doc->createElement('back'))
                 ->appendChild($doc->createElement('ref-list'));
