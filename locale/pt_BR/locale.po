@@ -1,0 +1,94 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2022-04-14T10:00:46+00:00\n"
+"PO-Revision-Date: 2022-04-14T10:00:46+00:00\n"
+"Last-Translator: Diego José Macêdo <diegojmacedo@gmail.com>\n"
+"Language: pt_BR\n"
+
+msgid "plugins.importexport.portico.settings"
+msgstr "Configurações"
+
+msgid "plugins.importexport.portico.displayName"
+msgstr "Plugin de Exportação Portico"
+
+msgid "plugins.importexport.portico.description"
+msgstr ""
+"\n"
+"\t\t<p>Este plug-in pode ser usado para exportar o conteúdo do periódico para inclusão no <a href=\"https://www.portico.org\" target=\"_blank\">serviço de preservação digital Portico</a>. O conteúdo pode ser baixado manualmente em seu computador local para entrega posterior à Portico ou enviado diretamente para sua conta no servidor Portico configurando suas credenciais abaixo. Acesse a guia <em>Exportar edições</em> para exportar os dados.</p>\n"
+"\t"
+
+msgid "plugins.importexport.portico.description.short"
+msgstr "Este plug-in pode ser usado para exportar o conteúdo do periódico para inclusão no serviço de preservação digital Portico. O conteúdo pode ser baixado manualmente para o seu computador local para entrega posterior ao Portico, ou pode ser enviado diretamente para sua conta no servidor FTP do Portico."
+
+msgid "plugins.importexport.portico.issnWarning"
+msgstr "Nota: Parece que você não configurou um ISSN online para o periódico. Isso não é estritamente obrigatório, mas simplificará o processo de depósito. Você pode configurar um ISSN na <a href=\"{$setupUrl}\" target=\"_blank\">Configuração da revista</a>."
+
+msgid "plugins.importexport.portico.abbreviationWarning"
+msgstr "Nota: Parece que você não configurou uma abreviação para o periódico. Isso não é estritamente obrigatório, mas simplificará o processo de depósito. Você pode criar uma abreviação da <a href=\"{$setupUrl}\" target=\"_blank\">Etapa de configuração da revista 1.1</a>."
+
+msgid "plugins.importexport.portico.endpoint.type"
+msgstr "Tipo de servidor"
+
+msgid "plugins.importexport.portico.endpoint.hostname"
+msgstr "Nome do host"
+
+msgid "plugins.importexport.portico.endpoint.username"
+msgstr "Nome do usuário"
+
+msgid "plugins.importexport.portico.endpoint.password"
+msgstr "Senha"
+
+msgid "plugins.importexport.portico.endpoint.path"
+msgstr "Caminho"
+
+msgid "plugins.importexport.portico.endpointNumber"
+msgstr "Endpoint #{$number}"
+
+msgid "plugins.importexport.portico.newEndpoint"
+msgstr "Novo Endpoint"
+
+msgid "plugins.importexport.portico.endpoint.delete"
+msgstr "Excluir este endpoint"
+
+msgid "plugins.importexport.portico.endpointPlaceholder"
+msgstr "ftp://username:password@ftp.portico.com"
+
+msgid "plugins.importexport.portico.export.issues"
+msgstr "Exportar Edições"
+
+msgid "plugins.importexport.portico.export.ftp"
+msgstr "Depositar Edições"
+
+msgid "plugins.importexport.portico.export.toggleSelection"
+msgstr "Alternar seleção"
+
+msgid "plugins.importexport.portico.export.success"
+msgstr "A exportação foi executada com sucesso!"
+
+msgid "plugins.importexport.portico.export.failure.connection"
+msgstr "Falha ao conectar ao servidor FTP em {$host}."
+
+msgid "plugins.importexport.portico.export.failure.credentials"
+msgstr "Falha ao inciar sessão no servidor FTP com as credenciais fornecidas."
+
+msgid "plugins.importexport.portico.export.failure.settings"
+msgstr "Para exportar as edições para o Portico, deve ser fornecidas as credenciais na aba de configurações."
+
+msgid "plugins.importexport.portico.export.failure.loadingIssue"
+msgstr "Falha ao carregar a edição com o ID #{$issueId}."
+
+msgid "plugins.importexport.portico.export.failure.creatingFile"
+msgstr "Falha ao criar arquivo zip."
+
+msgid "plugins.importexport.portico.export.failure.noIssueSelected"
+msgstr A exportação foi abortada porque nenhuma edição foi selecionada."
+
+msgid "plugins.importexport.portico.export.failure.general"
+msgstr "A exportação não foi bem-sucedida. O servidor pode ter demorado muito para enviar o arquivo para o servidor FTP Portico. Por favor, tente baixar manualmente os artigos para enviar através de um cliente FTP externo."
