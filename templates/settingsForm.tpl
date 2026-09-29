@@ -1,14 +1,14 @@
 {**
  * templates/settingsForm.tpl
  *
- * Copyright (c) 2014-2025 Simon Fraser University
- * Copyright (c) 2003-2025 John Willinsky
+ * Copyright (c) 2014-2026 Simon Fraser University
+ * Copyright (c) 2003-2026 John Willinsky
  * Distributed under the GNU GPL v3. For full terms see the file LICENSE.
  *
  * Portico plugin settings
  *
  *}
-<script>
+<script type="text/javascript">
 	$(function() {ldelim}
 		// Attach the form handler.
 		var form = $('#porticoSettingsForm').pkpHandler('$.pkp.controllers.form.AjaxFormHandler');
@@ -56,11 +56,19 @@
 			{rdelim}
 		{rdelim}).change();
 
-		// Prevent complaints about unsaved data
+		// The .change() calls above (to sync preset fields on load) mark the form as
+		// changed. Two separate things read that dirty state, so both need clearing:
+		// - TabHandler checks the FormHandler instance's own formChangesTracked flag
+		//   directly when switching tabs (in-page confirm() dialog).
+		// - SiteHandler's page-wide unsaved-forms registry drives the native browser
+		//   beforeunload prompt on actual navigation (e.g. submitting the export tab).
 		$.pkp.classes.Handler.getHandler(form).formChangesTracked = false;
+		form.trigger('unregisterAllForms');
 	{rdelim});
 </script>
-<form class="pkp_form" method="post" id="porticoSettingsForm" action="{url router=PKP\core\PKPApplication::ROUTE_COMPONENT op="manage" plugin=$pluginName category="importexport" verb="settings" save="true"}">
+<div class="semantic-defaults">
+<form class="pkp_form" method="post" id="porticoSettingsForm" action="{url router=PKP\core\PKPApplication::ROUTE_COMPONENT op="manage" plugin="PorticoExportPlugin" category="importexport" verb="save"}">
+	{csrf}
 	{include file="controllers/notification/inPlaceNotification.tpl" notificationId="porticoSettingsFormNotification"}
 	{fbvFormArea id="porticoSettingsFormArea"}
 		<p class="pkp_help">{translate key="plugins.importexport.portico.description"}</p>
@@ -122,7 +130,11 @@
 				</div>
 			</div>
 		{/fbvFormSection}
+		{fbvFormSection list="true"}
+			{fbvElement type="checkbox" id="automaticRegistration" label="plugins.importexport.portico.settings.form.automaticRegistration.description" checked=$automaticRegistration|compare:true}
+		{/fbvFormSection}
 	{/fbvFormArea}
 	{fbvFormButtons submitText="common.save" hideCancel="true"}
 	<p><span class="formRequired">{translate key="common.requiredField"}</span></p>
 </form>
+</div>

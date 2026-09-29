@@ -2,17 +2,25 @@ msgid ""
 msgstr ""
 "Project-Id-Version: \n"
 "Report-Msgid-Bugs-To: \n"
-"Last-Translator: \n"
-"Language-Team: \n"
+"POT-Creation-Date: 2026-07-20T00:00:00+00:00\n"
+"PO-Revision-Date: 2026-07-20T00:00:00+00:00\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2021-02-24T21:00:46+00:00\n"
-"PO-Revision-Date: 2021-02-24T21:00:46+00:00\n"
-"Language: \n"
 
 msgid "plugins.importexport.portico.displayName"
 msgstr "Portico Export Plugin"
+
+msgid "plugins.importexport.portico.description"
+msgstr ""
+"This plugin exports your journal content to the <a href=\"https://www.portico.org\" target=\"_blank\">"
+"Portico digital preservation service</a>. Content may be downloaded for later delivery to "
+"Portico, or delivered directly to your account on the Portico server by configuring your "
+"credentials below."
+
+msgid "plugins.importexport.portico.description.short"
+msgstr "Export journal articles to the Portico digital preservation service."
 
 msgid "plugins.importexport.portico.ftpLibraryMissing"
 msgstr ""
@@ -21,28 +29,6 @@ msgstr ""
 "<pre><code>composer -d lib/pkp require league/flysystem-ftp</code></pre>"
 "...or upgrade to a newer release of OJS. Until this is resolved, <strong>FTP deposits will not work</strong>. "
 "SFTP, Portico, and Library of Congress deposits can still be used.</blockquote>"
-
-msgid "plugins.importexport.portico.description"
-msgstr ""
-"This plugin exports your journal content to the <a href=\"https://www.portico.org\" target=\"_blank\">"
-"Portico digital preservation service</a>. Content may be downloaded for later delivery to "
-"Portico, or sent to your account on the Portico server by configuring your credentials below. "
-"Go to the <em>Export Issues</em> tab to export the data."
-
-msgid "plugins.importexport.portico.description.short"
-msgstr ""
-"This plugin exports your journal content to the Portico digital preservation service. Content may be downloaded"
-" for later delivery to Portico, or may be sent to your account on the Portico FTP server."
-
-msgid "plugins.importexport.portico.issnWarning"
-msgstr ""
-"Note: You have not configured an online ISSN for your journal. This is not mandatory, but will simplify "
-"the deposit process. You may configure an ISSN in <a href=\"{$setupUrl}\" target=\"_blank\">Journal Settings</a>."
-
-msgid "plugins.importexport.portico.abbreviationWarning"
-msgstr ""
-"Note: You have not configured an abbreviation for your journal. This is not mandatory, but will simplify "
-"the deposit process. You may configure an abbreviation in <a href=\"{$setupUrl}\" target=\"_blank\">Journal Settings</a>."
 
 msgid "plugins.importexport.portico.endpoint.type"
 msgstr "Server Type"
@@ -68,6 +54,9 @@ msgstr "Keyphrase (optional)"
 msgid "plugins.importexport.portico.endpoint.port"
 msgstr "Port (optional, SFTP defaults to 22, FTP to 21)"
 
+msgid "plugins.importexport.portico.endpoint.authenticationType"
+msgstr "Authentication Type"
+
 msgid "plugins.importexport.portico.endpointNumber"
 msgstr "Endpoint #{$number}"
 
@@ -77,32 +66,44 @@ msgstr "New Endpoint"
 msgid "plugins.importexport.portico.endpoint.delete"
 msgstr "Delete this endpoint"
 
-msgid "plugins.importexport.portico.export.ftp"
-msgstr "Deposit Issues"
+msgid "plugins.importexport.portico.manager.settings.required"
+msgstr "Please provide complete details for each endpoint."
 
-msgid "plugins.importexport.portico.export.toggleSelection"
-msgstr "Toggle Selection"
+msgid "plugins.importexport.portico.manager.settings.automaticRegistrationRequiresEndpoint"
+msgstr "Automatic registration requires at least one complete endpoint."
 
-msgid "plugins.importexport.portico.export.success"
-msgstr "The export was executed successfully!"
+msgid "plugins.importexport.portico.submit.success"
+msgstr "Articles submitted for delivery."
 
-msgid "plugins.importexport.portico.export.failure.connection"
-msgstr "Failed to connect to the FTP server at {$host}."
+msgid "plugins.importexport.portico.settings.form.automaticRegistration.description"
+msgstr ""
+"OJS will deliver content to Portico automatically once it is published. Please note that this may "
+"take a short amount of time after publication to process (e.g. depending on "
+"your cronjob configuration). You can check for all undelivered content in the export tab."
 
-msgid "plugins.importexport.portico.export.failure.credentials"
-msgstr "Failed to login to the FTP server. Please check your credentials and try again."
+msgid "plugins.importexport.portico.senderTask.name"
+msgstr "Portico automatic delivery task"
 
 msgid "plugins.importexport.portico.export.failure.settings"
-msgstr "To export the issues to Portico you must setup the credentials in the settings tab."
-
-msgid "plugins.importexport.portico.export.failure.loadingIssue"
-msgstr "Failed to load the issue with ID #{$issueId}."
+msgstr "To deliver content to Portico you must set up at least one endpoint in the settings tab."
 
 msgid "plugins.importexport.portico.export.failure.creatingFile"
-msgstr "Failed to create the zip file."
+msgstr "Failed to create the zip file for '{$param}'."
 
-msgid "plugins.importexport.portico.export.failure.noIssueSelected"
-msgstr "No issue was selected for export. Please select an issue and try again."
+msgid "plugins.importexport.portico.export.failure.creatingCollectionFile"
+msgstr "Failed to create the outer zip file for the export."
 
-msgid "plugins.importexport.portico.endpoint.authenticationType"
-msgstr "Authentication Type"
+msgid "plugins.importexport.portico.export.failure.jatsTemplateUnavailable"
+msgstr "Unable to generate the metadata XML for '{$param}': the JATS Template plugin is not installed or enabled."
+
+msgid "plugins.importexport.portico.export.failure.noPdf"
+msgstr "'{$param}' has no PDF galley. Portico requires a PDF, so it cannot be exported/deposited."
+
+msgid "plugins.importexport.portico.export.failure.malformedFullText"
+msgstr "The uploaded full-text JATS document for '{$param}' could not be parsed. Please check that it is well-formed XML."
+
+msgid "plugins.generic.portico.displayName"
+msgstr "Portico Plugin"
+
+msgid "plugins.generic.portico.description"
+msgstr "Exports and delivers articles or article versions to the Portico digital preservation service."

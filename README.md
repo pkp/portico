@@ -1,7 +1,7 @@
 # OJS Portico Export Plugin
 
-This plugin for OJS 3 provides an import/export plugin to generate metadata information for articles and issues for
-indexing in Portico FTP deposit. Details on the XML format and data requirements are available
+This plugin for OJS 3 generates metadata and full-text packages for articles, for deposit with
+Portico for digital preservation. Details on the XML format and data requirements are available
 [on the Portico website](https://www.portico.org).
 
 ## Installation
