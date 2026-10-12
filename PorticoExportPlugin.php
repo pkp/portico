@@ -46,11 +46,18 @@ use ZipArchive;
 class PorticoExportPlugin extends PubObjectsExportPlugin implements HasTaskScheduler
 {
     /**
-     * Galley is the primary PDF document, packed and referenced via <self-uri>
+     * Galley is a primary document rendition (PDF or EPUB), packed and referenced via <self-uri>
      *
      * @var string
      */
-    private const GALLEY_KIND_PDF = 'pdf';
+    private const GALLEY_KIND_RENDITION = 'rendition';
+
+    /**
+     * Rendition mimetypes Portico accepts (PDF preferred, EPUB accepted)
+     *
+     * @var string[]
+     */
+    private const RENDITION_MIMETYPES = ['application/pdf', 'application/epub+zip'];
 
     /**
      * Galley is a supplementary file, packed and referenced via <supplementary-material>
@@ -427,10 +434,10 @@ class PorticoExportPlugin extends PubObjectsExportPlugin implements HasTaskSched
             $genres[$genre->getId()] = $genre;
         }
 
-        // Classify galleys first, so a no-PDF submission fails before any file/URL work.
+        // Classify galleys first, so a submission without a rendition fails before any file/URL work.
         $fileService = app()->get('file');
         $classifiedGalleys = [];
-        $hasPdf = false;
+        $hasRendition = false;
         foreach ($publication->getData('galleys') ?? [] as $galley) {
             if ($galley->getData('urlRemote') || !$galley->getData('submissionFileId')) {
                 continue;
@@ -444,22 +451,21 @@ class PorticoExportPlugin extends PubObjectsExportPlugin implements HasTaskSched
                 continue;
             }
             $classifiedGalleys[] = ['galley' => $galley, 'submissionFile' => $submissionFile, 'kind' => $kind];
-            if ($kind === self::GALLEY_KIND_PDF) {
-                $hasPdf = true;
+            if ($kind === self::GALLEY_KIND_RENDITION) {
+                $hasRendition = true;
             }
         }
 
-        // We currently only deposit PDF and XML.
-        // TO-DO: ask Portico about other formats.
-        if (!$hasPdf) {
-            return ['error' => ['plugins.importexport.portico.export.failure.noPdf']];
+        // Portico needs a PDF or EPUB rendition; HTML galleys are not sent.
+        if (!$hasRendition) {
+            return ['error' => ['plugins.importexport.portico.export.failure.noRendition']];
         }
 
         // Track submissionFileId => packed filename, to rewrite matching XML references.
         $request = Application::get()->getRequest();
         $dispatcher = $request->getRouter()->getDispatcher();
         $packedFiles = [];
-        $pdfFilenames = [];
+        $renditions = [];
         $fileUrlsToFilenames = [];
         foreach ($classifiedGalleys as ['galley' => $galley, 'submissionFile' => $submissionFile, 'kind' => $kind]) {
             $filePath = $fileService->get($submissionFile->getData('fileId'))->path;
@@ -470,8 +476,8 @@ class PorticoExportPlugin extends PubObjectsExportPlugin implements HasTaskSched
             $submissionFileId = $submissionFile->getId();
             $packedFiles[$submissionFileId] = $relativeFilename;
 
-            if ($kind === self::GALLEY_KIND_PDF) {
-                $pdfFilenames[] = ['filename' => $relativeFilename, 'locale' => $galley->getLocale(), 'label' => $galley->getLabel()];
+            if ($kind === self::GALLEY_KIND_RENDITION) {
+                $renditions[] = ['filename' => $relativeFilename, 'mimetype' => $submissionFile->getData('mimetype'), 'locale' => $galley->getLocale(), 'label' => $galley->getLabel()];
             } elseif ($kind === self::GALLEY_KIND_SUPPLEMENTARY) {
                 // Precompute this file's own URLs to match uploaded-document references exactly.
                 $downloadUrl = $dispatcher->url($request, PKPApplication::ROUTE_PAGE, $context->getPath(), 'article', 'download', [$article->getBestId(), $galley->getBestGalleyId(), $submissionFileId], urlLocaleForPage: '');
@@ -515,7 +521,7 @@ class PorticoExportPlugin extends PubObjectsExportPlugin implements HasTaskSched
         if ($fullTextFilename !== null) {
             $referencedGraphicNames = PorticoJatsProcessor::extractGraphicFilenames($jatsFile->jatsContent);
             $mediaFilesByName = $this->packMediaFiles($zip, $article->getId(), $publication, $referencedGraphicNames);
-            $fullTextXml = PorticoJatsProcessor::processFullText($jatsFile->jatsContent, $mediaFilesByName, $pdfFilenames, $fileUrlsToFilenames);
+            $fullTextXml = PorticoJatsProcessor::processFullText($jatsFile->jatsContent, $mediaFilesByName, $renditions, $fileUrlsToFilenames);
             if ($fullTextXml === null) {
                 return ['error' => ['plugins.importexport.portico.export.failure.malformedFullText']];
             }
@@ -603,7 +609,7 @@ class PorticoExportPlugin extends PubObjectsExportPlugin implements HasTaskSched
     }
 
     /**
-     * Classify a submission file for packaging purposes: primary PDF, supplementary file, or excluded.
+     * Classify a submission file for packaging purposes: rendition (PDF/EPUB), supplementary file, or excluded.
      */
     protected function classifyFileForPackaging(SubmissionFile $submissionFile, array $genres): string
     {
@@ -619,8 +625,8 @@ class PorticoExportPlugin extends PubObjectsExportPlugin implements HasTaskSched
         $isPrimaryDocument = $genre->getCategory() === Genre::GENRE_CATEGORY_DOCUMENT
             && !$genre->getSupplementary()
             && !$genre->getDependent();
-        if ($isPrimaryDocument && $submissionFile->getData('mimetype') === 'application/pdf') {
-            return self::GALLEY_KIND_PDF;
+        if ($isPrimaryDocument && in_array($submissionFile->getData('mimetype'), self::RENDITION_MIMETYPES, true)) {
+            return self::GALLEY_KIND_RENDITION;
         }
 
         return self::GALLEY_KIND_EXCLUDED;

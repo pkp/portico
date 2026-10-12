@@ -59,16 +59,16 @@ class PorticoJatsProcessor
 
     /**
      * Post-process an uploaded full-text JATS document for packaging: adjusts the DTD
-     * and file references (images, PDF self-uri, supplementary material) only.
+     * and file references (images, PDF/EPUB self-uri, supplementary material) only.
      *
      * @param string $xml Raw uploaded JATS XML content
      * @param array<string, string> $mediaFilesByName Map of original media filename => relative packed filename
-     * @param array<int, array{filename: string, locale: string, label: string}> $pdfFilenames Every packaged PDF's relative filename, locale, and galley label
+     * @param array<int, array{filename: string, mimetype: string, locale: string, label: string}> $renditions Every packaged PDF/EPUB's relative filename, mimetype, locale, and galley label
      * @param array<string, string> $fileUrlsToFilenames Map of this submission's own download/view URLs => relative packed filename
      *
      * @return string|null Null if $xml could not be parsed
      */
-    public static function processFullText(string $xml, array $mediaFilesByName, array $pdfFilenames, array $fileUrlsToFilenames): ?string
+    public static function processFullText(string $xml, array $mediaFilesByName, array $renditions, array $fileUrlsToFilenames): ?string
     {
         $dom = self::parseWithArchivingDtd($xml);
         if ($dom === null) {
@@ -76,7 +76,7 @@ class PorticoJatsProcessor
         }
 
         self::rewriteGraphics($dom, $mediaFilesByName);
-        self::rewritePdfSelfUri($dom, $pdfFilenames);
+        self::rewriteRenditionSelfUris($dom, $renditions);
         self::rewriteSupplementaryMaterial($dom, $fileUrlsToFilenames);
 
         return $dom->saveXML();
@@ -144,23 +144,23 @@ class PorticoJatsProcessor
     }
 
     /**
-     * Replace any existing <self-uri content-type="pdf"> nodes under article-meta with
-     * one fresh node per packaged PDF -- a self-uri must resolve to a file bundled in
-     * this same package, so any existing reference is replaced rather than kept.
+     * Replace any existing PDF/EPUB <self-uri> nodes under article-meta with one fresh
+     * node per packaged rendition -- a self-uri must resolve to a file bundled in this
+     * same package, so any existing reference is replaced rather than kept.
      *
-     * @param array<int, array{filename: string, locale: string, label: string}> $pdfFilenames
+     * @param array<int, array{filename: string, mimetype: string, locale: string, label: string}> $renditions
      */
-    private static function rewritePdfSelfUri(DOMDocument $dom, array $pdfFilenames): void
+    private static function rewriteRenditionSelfUris(DOMDocument $dom, array $renditions): void
     {
         $articleMeta = $dom->getElementsByTagName('article-meta')->item(0);
         if (!$articleMeta) {
             return;
         }
 
-        // Anchor on the sibling immediately before the first PDF self-uri, if any, so the
+        // Anchor on the sibling immediately before the first rendition self-uri, if any, so the
         // replacements land in the same place the original(s) already were - a position we
         // can trust is DTD-valid, since a well-formed uploaded document already had it there.
-        // Captured before removing anything: if there are several adjacent PDF self-uri
+        // Captured before removing anything: if there are several adjacent rendition self-uri
         // nodes, a later one could otherwise end up "anchoring" on an earlier one that's
         // also about to be removed.
         $anchorSibling = null;
@@ -168,7 +168,7 @@ class PorticoJatsProcessor
         foreach (iterator_to_array($articleMeta->getElementsByTagName('self-uri')) as $node) {
             /** @var DOMElement $node */
             $contentType = strtolower($node->getAttribute('content-type'));
-            if ($contentType === 'pdf' || $contentType === 'application/pdf') {
+            if (in_array($contentType, ['pdf', 'application/pdf', 'epub', 'application/epub+zip'], true)) {
                 if (!$anchorFound) {
                     $anchorSibling = $node->previousSibling;
                     $anchorFound = true;
@@ -181,7 +181,7 @@ class PorticoJatsProcessor
             // Re-read nextSibling now, after removal, so it reflects the current tree.
             $insertBefore = $anchorSibling ? $anchorSibling->nextSibling : $articleMeta->firstChild;
         } else {
-            // No PDF self-uri existed to anchor to. self-uri must come before
+            // No rendition self-uri existed to anchor to. self-uri must come before
             // related-article/related-object/abstract/trans-abstract/kwd-group/funding-group/
             // support-group/conference/counts/custom-meta-group per the DTD's
             // article-meta-model - appending unconditionally at the end would be invalid if
@@ -197,13 +197,13 @@ class PorticoJatsProcessor
             }
         }
 
-        foreach ($pdfFilenames as $pdf) {
+        foreach ($renditions as $rendition) {
             $selfUri = $dom->createElement('self-uri');
-            $selfUri->setAttribute('xlink:href', $pdf['filename']);
-            $selfUri->setAttribute('content-type', 'application/pdf');
-            $selfUri->setAttribute('xml:lang', LocaleConversion::toBcp47($pdf['locale']));
-            if ($pdf['label']) {
-                $selfUri->setAttribute('xlink:title', $pdf['label']);
+            $selfUri->setAttribute('xlink:href', $rendition['filename']);
+            $selfUri->setAttribute('content-type', $rendition['mimetype']);
+            $selfUri->setAttribute('xml:lang', LocaleConversion::toBcp47($rendition['locale']));
+            if ($rendition['label']) {
+                $selfUri->setAttribute('xlink:title', $rendition['label']);
             }
             if ($insertBefore) {
                 $articleMeta->insertBefore($selfUri, $insertBefore);
@@ -241,7 +241,7 @@ class PorticoJatsProcessor
 
     /**
      * Portico's metadata XML must not include the article body -- the full text lives
-     * in the packaged PDF (and, separately, an uploaded JATS XML document, if any).
+     * in the packaged PDF/EPUB (and, separately, an uploaded JATS XML document, if any).
      */
     private static function removeBody(DOMDocument $dom): void
     {
@@ -308,7 +308,7 @@ class PorticoJatsProcessor
     /**
      * jatsTemplate has no way to know that an uploaded full-text JATS document is
      * being packaged alongside its own output, so add a cross-reference to it here,
-     * grouped after the other self-uris (landing page, then PDF, then full-text XML).
+     * grouped after the other self-uris (landing page, then PDF/EPUB, then full-text XML).
      */
     private static function addFullTextSelfUri(DOMDocument $dom, ?DOMElement $afterNode, string $fullTextFilename): void
     {

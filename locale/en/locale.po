@@ -96,8 +96,8 @@ msgstr "Failed to create the outer zip file for the export."
 msgid "plugins.importexport.portico.export.failure.jatsTemplateUnavailable"
 msgstr "Unable to generate the metadata XML for '{$param}': the JATS Template plugin is not installed or enabled."
 
-msgid "plugins.importexport.portico.export.failure.noPdf"
-msgstr "'{$param}' has no PDF galley. Portico requires a PDF, so it cannot be exported/deposited."
+msgid "plugins.importexport.portico.export.failure.noRendition"
+msgstr "'{$param}' has no PDF or EPUB galley. Portico requires one of them, so it cannot be exported/deposited."
 
 msgid "plugins.importexport.portico.export.failure.malformedFullText"
 msgstr "The uploaded full-text JATS document for '{$param}' could not be parsed. Please check that it is well-formed XML."
